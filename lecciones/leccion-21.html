@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lección animada — Tema 21 Agrosur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f4; --paper:#ffffff; --ink:#1c2229; --muted:#5c6672; --line:#dde3ea;
+  --brand:#8a1c1c;
+  --concept:#22548c; --concept-soft:#e4edf6; --concept-line:#bcd2ea;
+  --ejemplo:#1f7a4d; --ejemplo-soft:#e3f2e9; --ejemplo-line:#bfe0cd;
+  --error:#b5451d; --error-soft:#fbe8e0; --error-line:#f0cbb9;
+  --gold:#c9972a; --gold-soft:#f6edd6; --gold-line:#e6d3a3;
+  --expo:#6b3fa0; --expo-soft:#efe7f8; --expo-line:#d6c4ec;
+  --shadow:0 1px 3px rgba(20,30,45,.05),0 14px 40px rgba(20,30,45,.10);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:900px;margin:0 auto;padding:22px 16px 90px}
+.lhead{background:linear-gradient(135deg,#6b3fa0,#422766);border-radius:var(--radius);padding:24px 26px;color:#fff;box-shadow:var(--shadow);border-bottom:5px solid var(--gold)}
+.lhead .k{font-size:.75rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#d9c9ef;margin:0 0 6px}
+.lhead h1{font-family:Fraunces,serif;font-weight:600;font-size:1.75rem;margin:0 0 5px;line-height:1.12}
+.lhead p{margin:0;color:#e4d8f5;font-size:.94rem}
+.player{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);margin-top:18px;overflow:hidden;border:1px solid var(--line)}
+.stage{position:relative;background:radial-gradient(900px 340px at 50% 0%, #f6f0ff, #ffffff 72%);padding:0}
+.canvas{position:relative;height:370px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid var(--line)}
+@media(max-width:600px){.canvas{height:300px}}
+.scene{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:14px}
+.scene.on{display:flex;animation:fade .3s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.scene svg{max-width:100%;max-height:100%;height:auto}
+.textpane{padding:18px 26px 4px;min-height:84px}
+.fx-tag{display:inline-block;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:4px 11px;border-radius:999px;margin-bottom:8px;color:#fff}
+.fx-con{background:var(--concept)} .fx-err{background:var(--error)} .fx-gold{background:#9a7414} .fx-ej{background:var(--ejemplo)} .fx-expo{background:var(--expo)}
+.textpane h2{font-family:Fraunces,serif;font-weight:600;font-size:1.3rem;margin:0 0 3px;color:var(--ink)}
+.textpane .sub{color:var(--muted);font-size:.92rem;margin:0}
+.caption{background:#141b24;color:#eef2f7;padding:14px 22px;font-size:1rem;line-height:1.5;min-height:58px;display:flex;align-items:center}
+.caption b{color:#c9a7f5}
+.controls{display:flex;align-items:center;gap:10px;padding:14px 18px;background:#f7f9fb;border-top:1px solid var(--line);flex-wrap:wrap}
+.btn{border:none;border-radius:11px;padding:11px 18px;font-family:inherit;font-weight:600;font-size:.95rem;cursor:pointer;display:flex;align-items:center;gap:7px}
+.btn.play{background:var(--expo);color:#fff}.btn.play:hover{background:#573186}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}.btn.ghost:hover{background:#eef2f6}
+.progress{flex:1;min-width:110px;height:8px;background:#e2e8ef;border-radius:999px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--expo),var(--gold));transition:width .35s ease}
+.scenelabel{font-size:.8rem;color:var(--muted);font-weight:600;white-space:nowrap}
+.actrl{display:flex;align-items:center;gap:7px;width:100%;margin-top:4px;padding-top:12px;border-top:1px dashed var(--line)}
+.actrl label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.actrl select{font-family:inherit;font-size:.82rem;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+.dots{display:flex;gap:7px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;background:#cfd8e0;cursor:pointer;transition:.2s}
+.dot.on{background:var(--expo);transform:scale(1.3)}
+.note{font-size:.8rem;color:var(--muted);margin-top:14px;text-align:center}
+/* anim */
+.pop{opacity:0;transform:scale(.5);transform-origin:center;transition:opacity .3s ease,transform .34s cubic-bezier(.3,1.5,.5,1)}
+.pop.show{opacity:1;transform:scale(1)}
+.slideL{opacity:0;transform:translateX(-26px);transition:.36s ease}.slideL.show{opacity:1;transform:none}
+.slideR{opacity:0;transform:translateX(26px);transition:.36s ease}.slideR.show{opacity:1;transform:none}
+.slideU{opacity:0;transform:translateY(22px);transition:.36s ease}.slideU.show{opacity:1;transform:none}
+.slideD{opacity:0;transform:translateY(-22px);transition:.36s ease}.slideD.show{opacity:1;transform:none}
+.fadein{opacity:0;transition:opacity .45s ease}.fadein.show{opacity:1}
+.pulse.show{animation:pulse 1.1s ease infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.shake.show{animation:shake .45s ease}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.bob.show{animation:bob 1.8s ease-in-out infinite}@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lhead">
+    <p class="k">Lección animada · Tema 21 · Ejercicio de examen</p>
+    <h1>Agrosur SRL: cebada a Venezuela (DPU)</h1>
+    <p>Un caso de final tal como lo toma la cátedra. La trampa del DPU en destino. Dale play.</p>
+  </div>
+
+  <div class="player">
+    <div class="stage">
+      <div class="canvas" id="canvas">
+
+        <!-- ESCENA 0: enunciado -->
+        <section class="scene on" data-scene="0">
+          <svg viewBox="0 0 520 340" xmlns="http://www.w3.org/2000/svg">
+            <text class="s0 slideD" data-a="0" x="260" y="26" text-anchor="middle" font-family="Fraunces" font-weight="700" font-size="16.5" fill="var(--ink)">El enunciado: Agrosur</text>
+            <g class="s0 pop" data-a="0"><rect x="30" y="42" width="220" height="42" rx="10" fill="var(--ejemplo-soft)" stroke="var(--ejemplo)" stroke-width="2"/><text x="140" y="62" text-anchor="middle" font-family="Inter" font-weight="800" font-size="11.5" fill="#14532d">1.000 t de cebada cervecera</text><text x="140" y="78" text-anchor="middle" font-family="Inter" font-size="10" fill="#14532d">destino: Venezuela</text></g>
+            <g class="s0 pop" data-a="0"><rect x="270" y="42" width="220" height="42" rx="10" fill="var(--concept-soft)" stroke="var(--concept)" stroke-width="2"/><text x="380" y="62" text-anchor="middle" font-family="Inter" font-weight="800" font-size="11.5" fill="var(--concept)">USD 350 / tonelada</text><text x="380" y="78" text-anchor="middle" font-family="Inter" font-size="10" fill="#173a63">según factura</text></g>
+            <g class="s0 pop" data-a="1"><rect x="90" y="100" width="340" height="48" rx="12" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="2.5"/><text x="260" y="122" text-anchor="middle" font-family="Inter" font-weight="800" font-size="13" fill="#7a5a09">Condición DPU puerto de Maracaibo</text><text x="260" y="140" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#7a5a09">(entregado en DESTINO, descargado)</text></g>
+            <g class="s0 pop shake" data-a="1"><rect x="110" y="162" width="300" height="42" rx="11" fill="var(--error-soft)" stroke="var(--error)" stroke-width="2.5"/><text x="260" y="180" text-anchor="middle" font-family="Inter" font-weight="800" font-size="11.5" fill="#8a2f11">El precio incluye TODO hasta Maracaibo</text><text x="260" y="197" text-anchor="middle" font-family="Inter" font-size="10" fill="#8a2f11">pero exportamos desde Argentina…</text></g>
+          </svg>
+        </section>
+
+        <!-- ESCENA 1: restar todo lo posterior a Santa Fe -->
+        <section class="scene" data-scene="1">
+          <svg viewBox="0 0 520 340" xmlns="http://www.w3.org/2000/svg">
+            <text class="s1 slideD" data-a="0" x="260" y="24" text-anchor="middle" font-family="Fraunces" font-weight="700" font-size="15.5" fill="var(--ink)">La clave: valorar hasta el lugar de carga</text>
+            <g class="s1 pop" data-a="0"><rect x="40" y="38" width="440" height="40" rx="10" fill="var(--expo-soft)" stroke="var(--expo)" stroke-width="2"/><text x="260" y="56" text-anchor="middle" font-family="Inter" font-weight="700" font-size="10.5" fill="#422766">lugar de carga = SANTA FE (según documento de transporte)</text><text x="260" y="72" text-anchor="middle" font-family="Inter" font-weight="800" font-size="11" fill="var(--expo)">artículo 736</text></g>
+            <text class="s1 slideD" data-a="1" x="260" y="100" text-anchor="middle" font-family="Inter" font-weight="800" font-size="11.5" fill="var(--error)">Restar TODO lo posterior a la carga en Santa Fe:</text>
+            <g class="s1 slideL" data-a="1"><rect x="35" y="110" width="220" height="26" rx="7" fill="var(--error-soft)" stroke="var(--error-line)"/><text x="50" y="128" font-family="Inter" font-weight="600" font-size="10" fill="#8a2f11">− flete y seguro internacional</text></g>
+            <g class="s1 slideR" data-a="1"><rect x="265" y="110" width="220" height="26" rx="7" fill="var(--error-soft)" stroke="var(--error-line)"/><text x="280" y="128" font-family="Inter" font-weight="600" font-size="10" fill="#8a2f11">− gastos de descarga</text></g>
+            <g class="s1 slideL" data-a="1"><rect x="35" y="140" width="220" height="26" rx="7" fill="var(--error-soft)" stroke="var(--error-line)"/><text x="50" y="158" font-family="Inter" font-weight="600" font-size="10" fill="#8a2f11">− gastos de puerto en Maracaibo</text></g>
+            <g class="s1 slideR" data-a="1"><rect x="265" y="140" width="220" height="26" rx="7" fill="var(--error-soft)" stroke="var(--error-line)"/><text x="280" y="158" font-family="Inter" font-weight="600" font-size="10" fill="#8a2f11">− aduana impo + transporte destino</text></g>
+            <g class="s1 pop" data-a="1"><rect x="120" y="176" width="280" height="40" rx="11" fill="var(--brand)"/><text x="260" y="201" text-anchor="middle" font-family="Inter" font-weight="800" font-size="13" fill="#fff">= FOB en el lugar de carga</text></g>
+          </svg>
+        </section>
+
+        <!-- ESCENA 2: comisión + qué determinar -->
+        <section class="scene" data-scene="2">
+          <svg viewBox="0 0 520 340" xmlns="http://www.w3.org/2000/svg">
+            <text class="s2 slideD" data-a="0" x="260" y="26" text-anchor="middle" font-family="Fraunces" font-weight="700" font-size="16" fill="var(--ink)">El detalle de la comisión del agente</text>
+            <g class="s2 pop" data-a="0"><rect x="40" y="44" width="440" height="56" rx="12" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="2.5"/><text x="260" y="66" text-anchor="middle" font-family="Inter" font-weight="800" font-size="11.5" fill="#7a5a09">La comisión YA está incluida en el precio</text><text x="260" y="85" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#7a5a09">→ NO se suma al FOB, pero SÍ se resta para el reintegro</text></g>
+            <text class="s2 slideD" data-a="1" x="260" y="126" text-anchor="middle" font-family="Inter" font-weight="800" font-size="12" fill="var(--expo)">Y para cerrar, hay que determinar:</text>
+            <g class="s2 slideL" data-a="1"><rect x="40" y="138" width="215" height="30" rx="8" fill="var(--concept-soft)" stroke="var(--concept-line)"/><text x="147" y="158" text-anchor="middle" font-family="Inter" font-weight="700" font-size="10.5" fill="#173a63">el régimen</text></g>
+            <g class="s2 slideR" data-a="1"><rect x="265" y="138" width="215" height="30" rx="8" fill="var(--concept-soft)" stroke="var(--concept-line)"/><text x="372" y="158" text-anchor="middle" font-family="Inter" font-weight="700" font-size="10.5" fill="#173a63">el momento imponible</text></g>
+            <g class="s2 slideL" data-a="1"><rect x="40" y="172" width="215" height="30" rx="8" fill="var(--concept-soft)" stroke="var(--concept-line)"/><text x="147" y="192" text-anchor="middle" font-family="Inter" font-weight="700" font-size="10.5" fill="#173a63">la alícuota según la fecha</text></g>
+            <g class="s2 slideR" data-a="1"><rect x="265" y="172" width="215" height="30" rx="8" fill="var(--ejemplo-soft)" stroke="var(--ejemplo)" stroke-width="2"/><text x="372" y="192" text-anchor="middle" font-family="Inter" font-weight="800" font-size="10.5" fill="#14532d">derecho de expo + reintegro</text></g>
+          </svg>
+        </section>
+
+      </div>
+      <div class="textpane" id="textpane"></div>
+    </div>
+
+    <div class="caption" id="caption">Tocá <b>Reproducir</b> para empezar la lección.</div>
+
+    <div class="controls">
+      <button class="btn play" id="playBtn">▶ Reproducir</button>
+      <button class="btn ghost" id="prevBtn">◀</button>
+      <button class="btn ghost" id="nextBtn">▶</button>
+      <div class="progress"><i id="bar"></i></div>
+      <span class="scenelabel" id="slabel">1 / 3</span>
+      <div class="actrl">
+        <label>Velocidad</label><select id="rateSel"><option value="0.9">Lenta</option><option value="1" selected>Normal</option><option value="1.25">Rápida</option><option value="1.5">Muy rápida</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="dots" id="dots"></div>
+  <p class="note">Lección completa con voz profesional (Marcus). Dale play y seguí la explicación.</p>
+  <!-- ====== REFUERZO AUTOSUFICIENTE ====== -->
+  <style>
+  .refz{margin-top:30px}
+  .refz-h{font-family:Fraunces,serif;font-weight:600;font-size:1.3rem;color:var(--ink);text-align:center;margin:0 0 4px}
+  .refz-s{text-align:center;color:var(--muted);font-size:.86rem;margin:0 0 20px}
+  .rcard{background:var(--paper);border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden;margin-bottom:16px}
+  .rcard-top{display:flex;align-items:center;gap:10px;padding:14px 18px;font-weight:800;font-size:.95rem;color:#fff}
+  .rc-key .rcard-top{background:linear-gradient(135deg,#22548c,#16375f)}
+  .rc-trap .rcard-top{background:linear-gradient(135deg,#b5451d,#8a2f11)}
+  .rc-art .rcard-top{background:linear-gradient(135deg,#1f7a4d,#14532d)}
+  .rc-q .rcard-top{background:linear-gradient(135deg,#9a7414,#6e520c)}
+  .rc-diag .rcard-top{background:linear-gradient(135deg,#6b3fa0,#422766)}
+  .rcard-body{padding:16px 18px}
+  .steps-r{list-style:none;margin:0;padding:0;counter-reset:st}
+  .steps-r li{counter-increment:st;position:relative;padding:9px 0 9px 36px;border-bottom:1px dashed var(--line);font-size:.9rem;line-height:1.45}
+  .steps-r li:last-child{border-bottom:none}
+  .steps-r li::before{content:counter(st);position:absolute;left:0;top:8px;width:24px;height:24px;background:var(--concept);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem}
+  .traplist{margin:0;padding:0;list-style:none}
+  .traplist li{padding:9px 0 9px 26px;position:relative;font-size:.9rem;line-height:1.45;border-bottom:1px dashed var(--line)}
+  .traplist li:last-child{border-bottom:none}
+  .traplist li::before{content:"\2717";position:absolute;left:0;top:8px;color:var(--error);font-weight:800}
+  .artrow{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
+  .artrow:last-child{border-bottom:none}
+  .artrow b{color:var(--ejemplo);white-space:nowrap;font-size:.92rem}
+  details.rq{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;background:#fff}
+  details.rq summary{padding:13px 16px;cursor:pointer;font-weight:700;font-size:.9rem;color:var(--ink);list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  details.rq summary::-webkit-details-marker{display:none}
+  details.rq summary::after{content:"ver respuesta \25be";font-size:.74rem;font-weight:700;color:var(--gold);white-space:nowrap}
+  details.rq[open] summary::after{content:"ocultar \25b4"}
+  details.rq .ans{padding:0 16px 15px;font-size:.88rem;line-height:1.5;color:#2c3540}
+  .rq-tag{display:inline-block;font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:999px;background:var(--gold-soft);color:#7a5a09;margin-right:8px}
+  .verify-r{display:inline-block;background:#fff4d6;border:1px solid #e6d3a3;color:#7a5a09;border-radius:6px;padding:1px 7px;font-size:.76rem;font-weight:700}
+  </style>
+  <style>
+  .quizc{background:var(--paper);border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden;margin-bottom:16px}
+  .quizc .rcard-top{display:flex;align-items:center;gap:10px;padding:14px 18px;font-weight:800;font-size:.95rem;color:#fff;background:linear-gradient(135deg,#0f7279,#0a4b50)}
+  .quizc-body{padding:16px 18px}
+  .qz-q{margin-bottom:18px;border-bottom:1px dashed var(--line);padding-bottom:16px}
+  .qz-q:last-of-type{border-bottom:none}
+  .qz-stem{font-weight:700;font-size:.92rem;color:var(--ink);margin:0 0 10px}
+  .qz-stem .qn{display:inline-block;background:#0f7279;color:#fff;border-radius:6px;padding:1px 8px;font-size:.78rem;margin-right:7px}
+  .qz-opt{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:8px;font-family:inherit;font-size:.88rem;color:var(--ink);cursor:pointer;transition:.15s;line-height:1.4}
+  .qz-opt:hover:not(:disabled){border-color:#0f7279;background:#f3fbfb}
+  .qz-opt:disabled{cursor:default}
+  .qz-opt.ok{border-color:#1f7a4d;background:#e3f2e9;color:#14532d;font-weight:700}
+  .qz-opt.bad{border-color:#b5451d;background:#fbe8e0;color:#8a2f11}
+  .qz-opt .mk{float:right;font-weight:800}
+  .qz-fb{display:none;margin-top:8px;padding:11px 13px;border-radius:10px;font-size:.85rem;line-height:1.45}
+  .qz-fb.show{display:block}
+  .qz-fb.good{background:#e3f2e9;color:#14532d;border:1px solid #bfe0cd}
+  .qz-fb.wrong{background:#fbe8e0;color:#8a2f11;border:1px solid #f0cbb9}
+  .qz-score{display:none;margin-top:6px;padding:16px;border-radius:12px;text-align:center;background:linear-gradient(135deg,#0f7279,#0a4b50);color:#fff}
+  .qz-score.show{display:block}
+  .qz-score b{font-size:1.5rem;font-family:Fraunces,serif;display:block;margin-bottom:2px}
+  .qz-score .msg{font-size:.9rem;opacity:.95}
+  .qz-reset{margin-top:12px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:9px;padding:8px 16px;font-family:inherit;font-weight:700;font-size:.82rem;cursor:pointer}
+  </style>
+  <div class="refz">
+    <h3 class="refz-h">📌 Para que te alcance solo con esto</h3>
+    <p class="refz-s">Mirá el video y repasá estas tarjetas. En 1 minuto tenés el tema cerrado.</p>
+    <div class="rcard rc-diag"><div class="rcard-top">🗺 Diagrama tipo final — dibujalo de memoria</div><div class="rcard-body" style="padding:10px"><svg viewBox="0 0 520 230" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-width:450px;display:block;margin:0 auto"><defs><marker id="m" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a1c1c"/></marker></defs><text x="260" y="20" text-anchor="middle" font-family="Fraunces,serif" font-weight="700" font-size="12.5" fill="#1c2229">Agrosur: DPU destino → FOB en Santa Fe</text>
+ <g font-family="Inter,sans-serif" font-size="9.5">
+ <rect x="60" y="32" width="400" height="34" rx="9" fill="#f6edd6" stroke="#c9972a" stroke-width="2"/><text x="260" y="50" text-anchor="middle" font-weight="800" font-size="10" fill="#7a5a09">Precio DPU Maracaibo (incluye TODO hasta destino)</text><text x="260" y="62" text-anchor="middle" font-size="8.5" fill="#7a5a09">1.000 t × USD 350/t</text>
+ <path d="M260 66 v8" stroke="#8a1c1c" stroke-width="2.5" marker-end="url(#m)"/>
+ <rect x="30" y="78" width="440" height="68" rx="10" fill="#fbe8e0" stroke="#b5451d" stroke-width="2"/><text x="260" y="96" text-anchor="middle" font-weight="800" font-size="10" fill="#8a2f11">RESTAR todo lo posterior a la carga (Santa Fe, art. 736):</text>
+ <text x="46" y="114" fill="#8a2f11">− flete y seguro internacional  − gastos de descarga</text>
+ <text x="46" y="130" fill="#8a2f11">− gastos de puerto Maracaibo  − aduana impo + transporte destino</text>
+ <path d="M260 146 v8" stroke="#8a1c1c" stroke-width="2.5" marker-end="url(#m)"/>
+ <rect x="130" y="158" width="260" height="36" rx="10" fill="#8a1c1c"/><text x="260" y="181" text-anchor="middle" font-weight="800" font-size="12" fill="#fff">= FOB en el lugar de carga</text>
+ <text x="260" y="214" text-anchor="middle" font-style="italic" font-size="9" fill="#5c6672">Comisión incluida: NO se suma, pero SÍ se resta para el reintegro</text>
+ </g></svg></div></div>
+    <div class="rcard rc-key"><div class="rcard-top">🔑 La secuencia, de memoria</div><div class="rcard-body"><ol class="steps-r"><li>Caso <b>Agrosur</b>: 1.000 t de cebada a Venezuela, condición <b>DPU Maracaibo</b> (destino), USD 350/t. El precio incluye todo hasta destino.</li><li>La clave: la exportación se valora hasta el <b>lugar de carga</b> (Santa Fe, art. 736). Hay que <b>restar todos los gastos posteriores</b> a la carga.</li><li>Se restan: flete y seguro internacional, descarga, gastos de puerto en Maracaibo, aduana de importación y transporte a destino final → se llega al <b>FOB</b>.</li><li>Detalle: la <b>comisión del agente está incluida</b> → no se suma, pero <b>sí se resta para el reintegro</b>. Luego: régimen, momento, alícuota y liquidación.</li></ol></div></div>
+    <div class="rcard rc-trap"><div class="rcard-top">⚠ Acá se desaprueba</div><div class="rcard-body"><ul class="traplist"><li>Valorar en destino (Maracaibo): se valora en el <b>lugar de carga</b> (Santa Fe).</li><li>No restar <b>todos</b> los gastos posteriores a la carga del precio DPU.</li><li>Sumar la comisión que ya está incluida: no se suma, pero sí se resta para el reintegro.</li><li>Olvidar determinar régimen, momento imponible y alícuota según la fecha.</li></ul></div></div>
+    <div class="rcard rc-art"><div class="rcard-top">📖 Los artículos que tenés que citar</div><div class="rcard-body"><div class="artrow"><b>Art. 736</b><span>lugar de carga (Santa Fe) como punto de valoración.</span></div><div class="artrow"><b>Reintegro</b><span>la comisión se resta para su base.</span></div></div></div>
+    <div class="rcard rc-q"><div class="rcard-top">🎯 Preguntas tipo final (tapá la respuesta)</div><div class="rcard-body"><details class="rq"><summary><span><span class="rq-tag">Oral</span>El precio es DPU destino. ¿Cómo llegás al FOB argentino?</span></summary><div class="ans">Como la exportación se valora hasta el <b>lugar de carga</b> (Santa Fe, según el documento de transporte, art. 736), <b>resto todos los gastos posteriores</b> a esa carga: flete y seguro internacional, descarga, gastos de puerto en destino, aduana de importación y transporte final. Lo que queda es el FOB.</div></details><details class="rq"><summary><span><span class="rq-tag">Escrito</span>La comisión del agente está incluida en el precio. ¿Qué hacés?</span></summary><div class="ans">No se <b>suma</b> (ya está en el precio), pero <b>sí se resta para calcular el reintegro</b>. Es un ajuste que impacta solo del lado del reintegro.</div></details><details class="rq"><summary><span><span class="rq-tag">Trampa</span>¿Se valora en Maracaibo porque ahí se entrega?</span></summary><div class="ans">No. Aunque la entrega sea en Maracaibo (DPU), la exportación argentina se valora en el <b>lugar de carga</b> (Santa Fe). Todo lo posterior a esa carga se resta.</div></details></div></div>
+    <div class="quizc"><div class="rcard-top">🧠 Quiz: ¿lo aprendiste? (autocorregible)</div><div class="quizc-body"><div class="qz-q" data-qi="0"><p class="qz-stem"><span class="qn">1</span>El precio DPU Maracaibo incluye:</p><button class="qz-opt" data-q="0" data-o="0" data-ok="0">Solo el FOB<span class="mk"></span></button><button class="qz-opt" data-q="0" data-o="1" data-ok="1">Todos los gastos hasta destino<span class="mk"></span></button><button class="qz-opt" data-q="0" data-o="2" data-ok="0">Nada<span class="mk"></span></button><button class="qz-opt" data-q="0" data-o="3" data-ok="0">Solo el flete<span class="mk"></span></button><div class="qz-fb" data-fb="0"><b>Correcto:</b> DPU en destino incluye todo hasta Maracaibo.</div></div><div class="qz-q" data-qi="1"><p class="qz-stem"><span class="qn">2</span>La exportación se valora:</p><button class="qz-opt" data-q="1" data-o="0" data-ok="0">En Maracaibo<span class="mk"></span></button><button class="qz-opt" data-q="1" data-o="1" data-ok="1">En el lugar de carga (Santa Fe, art. 736)<span class="mk"></span></button><button class="qz-opt" data-q="1" data-o="2" data-ok="0">En la fábrica<span class="mk"></span></button><button class="qz-opt" data-q="1" data-o="3" data-ok="0">En la aduana de destino<span class="mk"></span></button><div class="qz-fb" data-fb="1"><b>Correcto:</b> hasta el lugar de carga.</div></div><div class="qz-q" data-qi="2"><p class="qz-stem"><span class="qn">3</span>Del precio DPU hay que:</p><button class="qz-opt" data-q="2" data-o="0" data-ok="0">Sumar gastos<span class="mk"></span></button><button class="qz-opt" data-q="2" data-o="1" data-ok="1">Restar todos los gastos posteriores a la carga<span class="mk"></span></button><button class="qz-opt" data-q="2" data-o="2" data-ok="0">No hacer nada<span class="mk"></span></button><button class="qz-opt" data-q="2" data-o="3" data-ok="0">Sumar el reintegro<span class="mk"></span></button><div class="qz-fb" data-fb="2"><b>Correcto:</b> restar flete, seguro, descarga, puerto, etc.</div></div><div class="qz-q" data-qi="3"><p class="qz-stem"><span class="qn">4</span>La comisión del agente, que está incluida:</p><button class="qz-opt" data-q="3" data-o="0" data-ok="0">Se suma<span class="mk"></span></button><button class="qz-opt" data-q="3" data-o="1" data-ok="1">No se suma, pero se resta para el reintegro<span class="mk"></span></button><button class="qz-opt" data-q="3" data-o="2" data-ok="0">Se duplica<span class="mk"></span></button><button class="qz-opt" data-q="3" data-o="3" data-ok="0">Se ignora<span class="mk"></span></button><div class="qz-fb" data-fb="3"><b>Correcto:</b> no se suma; sí se resta para el reintegro.</div></div><div class="qz-q" data-qi="4"><p class="qz-stem"><span class="qn">5</span>Además hay que determinar:</p><button class="qz-opt" data-q="4" data-o="0" data-ok="0">Solo el flete<span class="mk"></span></button><button class="qz-opt" data-q="4" data-o="1" data-ok="1">Régimen, momento imponible, alícuota y liquidación<span class="mk"></span></button><button class="qz-opt" data-q="4" data-o="2" data-ok="0">El Incoterm<span class="mk"></span></button><button class="qz-opt" data-q="4" data-o="3" data-ok="0">La merma<span class="mk"></span></button><div class="qz-fb" data-fb="4"><b>Correcto:</b> régimen, momento, alícuota y liquidar derecho + reintegro.</div></div><div class="qz-score" id="qzScore"><b id="qzNum">0 / 5</b><span class="msg" id="qzMsg"></span><br><button class="qz-reset" id="qzReset">Volver a intentar</button></div><script>(function(){
+  var total=5, answered={}, correct=0;
+  var root=document.currentScript.closest('.quizc');
+  root.querySelectorAll('.qz-opt').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var qi=btn.dataset.q; if(answered[qi])return; answered[qi]=true;
+      var q=root.querySelector('.qz-q[data-qi="'+qi+'"]');
+      var ok=btn.dataset.ok==='1'; if(ok)correct++;
+      q.querySelectorAll('.qz-opt').forEach(function(b){
+        b.disabled=true;
+        if(b.dataset.ok==='1'){b.classList.add('ok');b.querySelector('.mk').textContent='\u2713';}
+        else if(b===btn){b.classList.add('bad');b.querySelector('.mk').textContent='\u2717';}
+      });
+      var fb=root.querySelector('.qz-fb[data-fb="'+qi+'"]');
+      fb.classList.add('show'); fb.classList.add(ok?'good':'wrong');
+      if(Object.keys(answered).length===total){
+        var sc=root.querySelector('#qzScore'); sc.classList.add('show');
+        root.querySelector('#qzNum').textContent=correct+' / '+total;
+        var m=root.querySelector('#qzMsg');
+        var pct=correct/total;
+        m.textContent = pct===1?'\u00a1Perfecto! Domin\u00e1s el tema.':pct>=0.6?'Bien, pero repas\u00e1 lo que fallaste.':'Mir\u00e1 de nuevo el video y el refuerzo.';
+        sc.scrollIntoView({behavior:'smooth',block:'nearest'});
+      }
+    });
+  });
+  root.querySelector('#qzReset').addEventListener('click',function(){
+    answered={};correct=0;
+    root.querySelector('#qzScore').classList.remove('show');
+    root.querySelectorAll('.qz-opt').forEach(function(b){b.disabled=false;b.classList.remove('ok','bad');b.querySelector('.mk').textContent='';});
+    root.querySelectorAll('.qz-fb').forEach(function(f){f.classList.remove('show','good','wrong');});
+    root.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+})();</script></div></div>
+  </div>
+
+</div>
+
+<script>
+const AUDIOS={1:"../audio/t21-1.mp3",2:"../audio/t21-2.mp3",3:"../audio/t21-3.mp3"};
+const META=[
+  {tag:'El enunciado',cls:'fx-ej',h:'Caso Agrosur',sub:'1.000 t de cebada a Venezuela, DPU Maracaibo, USD 350/t. El precio incluye todo hasta destino.'},
+  {tag:'La clave',cls:'fx-err',h:'Volver a Santa Fe',sub:'Se valora hasta el lugar de carga (Santa Fe, art. 736): restar todos los gastos posteriores.'},
+  {tag:'Detalles',cls:'fx-gold',h:'Comisión y cierre',sub:'La comisión está incluida: no se suma, pero se resta para el reintegro. Luego régimen, momento, alícuota y liquidación.'}
+];
+const SCENES=[
+  {steps:[
+    {a:0,say:"Ejercicio de examen: Agrosur. Es un caso de final tal como lo toma la cátedra. La firma Agrosur exporta mil toneladas de cebada cervecera con destino a Venezuela,"},
+    {a:1,say:"valor concertado en condición de DPU puerto de Maracaibo, a trescientos cincuenta dólares la tonelada según factura."}
+  ]},
+  {steps:[
+    {a:0,say:"Lo central: como el precio es DPU en destino, incluye todos los gastos hasta Maracaibo, pero la exportación argentina se valora hasta el lugar de carga, que según el documento de transporte es Santa Fe, artículo setecientos treinta y seis."},
+    {a:1,say:"Entonces hay que restar todos los gastos posteriores a la carga en Santa Fe: flete y seguro internacional, gastos de descarga, gastos de puerto en Maracaibo, aduana de importación y transporte hasta destino final."}
+  ]},
+  {steps:[
+    {a:0,say:"Con eso llegamos al FOB en el lugar de carga. La comisión del agente está incluida en el precio, así que no se suma, pero se resta para calcular el reintegro."},
+    {a:1,say:"Y hay que determinar el régimen, el momento imponible, la alícuota según la fecha, y liquidar el derecho de exportación y el reintegro."}
+  ]}
+];
+
+let si=0,pi=-1,playing=false,voices=[],chosenURI=null,rate=1,keepAlive=null;
+const canvas=document.getElementById('canvas'),caption=document.getElementById('caption'),playBtn=document.getElementById('playBtn'),bar=document.getElementById('bar'),slabel=document.getElementById('slabel'),dotsWrap=document.getElementById('dots'),textpane=document.getElementById('textpane');
+SCENES.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.onclick=()=>gotoScene(i);dotsWrap.appendChild(d);});
+function paintDots(){[...dotsWrap.children].forEach((d,i)=>d.classList.toggle('on',i===si));}
+function paintText(n){const m=META[n];textpane.innerHTML='<span class="fx-tag '+m.cls+'">'+m.tag+'</span><h2>'+m.h+'</h2><p class="sub">'+m.sub+'</p>';}
+function showScene(n){[...canvas.querySelectorAll('.scene')].forEach(s=>s.classList.toggle('on',+s.dataset.scene===n));slabel.textContent=(n+1)+' / '+SCENES.length;bar.style.width=(n/(SCENES.length-1)*100)+'%';paintDots();paintText(n);}
+function sel(n){return canvas.querySelector('.scene[data-scene="'+n+'"]');}
+function resetAnims(n){sel(n).querySelectorAll('.s'+n).forEach(e=>e.classList.remove('show'));}
+function showAnimsUpTo(n,a){sel(n).querySelectorAll('.s'+n).forEach(e=>{if(+e.dataset.a<=a)e.classList.add('show');});}
+function showAllAnims(n){sel(n).querySelectorAll('.s'+n).forEach(e=>e.classList.add('show'));}
+function highlight(t){return t.replace(/Agrosur|cebada cervecera|Venezuela|DPU|Maracaibo|lugar de carga|Santa Fe|artículo setecientos treinta y seis|gastos posteriores|FOB|comisión del agente|reintegro|régimen|momento imponible|alícuota|derecho de exportación/g,m=>'<b>'+m+'</b>');}
+
+const SCENE_AUDIO = {0:[1], 1:[2], 2:[3]};
+let curAudio=null;
+function playAudioSeq(list, sceneIdx, done){
+  let idx=0;
+  const scene=SCENES[sceneIdx];
+  const totalSteps=scene.steps.length;
+  function playOne(){
+    if(!playing){return;}
+    if(idx>=list.length){ if(done)done(); return; }
+    const src=AUDIOS[list[idx]];
+    curAudio=new Audio(src);
+    curAudio.playbackRate=rate;
+    curAudio.onloadedmetadata=function(){
+      const dur=curAudio.duration||6;
+      const from=Math.floor(idx*totalSteps/list.length);
+      const to=Math.floor((idx+1)*totalSteps/list.length);
+      let k=from;
+      showAnimsUpTo(sceneIdx, from);
+      const gap=dur/Math.max(1,(to-from));
+      const timer=setInterval(()=>{
+        if(!playing){clearInterval(timer);return;}
+        k++; if(k<=to) showAnimsUpTo(sceneIdx,k);
+        if(k>=to) clearInterval(timer);
+      }, gap*1000);
+    };
+    curAudio.onended=function(){ idx++; playOne(); };
+    curAudio.onerror=function(){ idx++; playOne(); };
+    curAudio.play().catch(()=>{ idx++; playOne(); });
+  }
+  playOne();
+}
+
+function playScene(){
+  if(!playing)return;
+  showScene(si); resetAnims(si);
+  const list=SCENE_AUDIO[si]||[];
+  caption.innerHTML=highlight(SCENES[si].steps.map(s=>s.say).join(' '));
+  playAudioSeq(list, si, ()=>{
+    if(!playing)return;
+    if(si<SCENES.length-1){ si++; pi=-1; setTimeout(playScene,300); }
+    else { stopPlay(); caption.innerHTML="Fin de la lección 👏"; }
+  });
+}
+function startPlay(){playing=true;playBtn.innerHTML='❚❚ Pausar';playScene();}
+function stopPlay(){playing=false;playBtn.innerHTML='▶ Reproducir';if(curAudio){curAudio.pause();curAudio=null;}if(keepAlive){clearInterval(keepAlive);keepAlive=null;}}
+function togglePlay(){playing?stopPlay():startPlay();}
+function gotoScene(n){stopPlay();si=n;pi=-1;showScene(n);resetAnims(n);showAllAnims(n);caption.innerHTML="Escena "+(n+1)+". Tocá reproducir para la narración desde acá.";}
+playBtn.onclick=togglePlay;
+document.getElementById('nextBtn').onclick=()=>{if(si<SCENES.length-1)gotoScene(si+1);};
+document.getElementById('prevBtn').onclick=()=>{if(si>0)gotoScene(si-1);};
+document.getElementById('rateSel').onchange=e=>{rate=parseFloat(e.target.value);if(curAudio)curAudio.playbackRate=rate;};
+showScene(0);resetAnims(0);
+</script>
+</body>
+</html>

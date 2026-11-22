@@ -342,25 +342,42 @@ function playAudioSeq(list, sceneIdx, done){
     if(idx>=list.length){ if(done)done(); return; }
     const src=AUDIOS[list[idx]];
     curAudio=new Audio(src);
+    curAudio.preload="auto";
     curAudio.playbackRate=rate;
-    // revelar los dibujos de esta porción mientras suena
+    let advanced=false;        // evita avanzar dos veces (ended + respaldo)
+    let watchdog=null;         // respaldo por tiempo si 'ended' no dispara
+    let animTimer=null;
+    function clearTimers(){ if(watchdog){clearTimeout(watchdog);watchdog=null;} if(animTimer){clearInterval(animTimer);animTimer=null;} }
+    function advance(){
+      if(advanced){return;} advanced=true;
+      clearTimers();
+      idx++; playOne();
+    }
+    // revelar los dibujos de esta porción mientras suena + armar el respaldo por tiempo
     curAudio.onloadedmetadata=function(){
-      const dur=curAudio.duration||6;
+      const dur=(isFinite(curAudio.duration)&&curAudio.duration>0)?curAudio.duration:6;
       // qué pasos corresponden a este audio (reparto proporcional)
       const from=Math.floor(idx*totalSteps/list.length);
       const to=Math.floor((idx+1)*totalSteps/list.length);
       let k=from;
       showAnimsUpTo(sceneIdx, from);
       const gap=dur/Math.max(1,(to-from));
-      const timer=setInterval(()=>{
-        if(!playing){clearInterval(timer);return;}
+      animTimer=setInterval(()=>{
+        if(!playing){clearInterval(animTimer);return;}
         k++; if(k<=to) showAnimsUpTo(sceneIdx,k);
-        if(k>=to) clearInterval(timer);
+        if(k>=to) clearInterval(animTimer);
       }, gap*1000);
+      // RESPALDO: si el audio no dispara 'ended' (pestaña en segundo plano,
+      // pantalla apagada, Safari/iOS encadenando audios), avanzamos igual.
+      const effDur=dur/Math.max(0.1,(curAudio.playbackRate||1));
+      if(watchdog)clearTimeout(watchdog);
+      watchdog=setTimeout(advance, (effDur*1000)+1500);
     };
-    curAudio.onended=function(){ idx++; playOne(); };
-    curAudio.onerror=function(){ idx++; playOne(); };
-    curAudio.play().catch(()=>{ idx++; playOne(); });
+    curAudio.onended=advance;
+    curAudio.onerror=advance;
+    // si el audio se queda trabado sin poder seguir, avanzamos
+    curAudio.onstalled=function(){ if(!advanced){ if(watchdog)clearTimeout(watchdog); watchdog=setTimeout(advance,4000);} };
+    curAudio.play().catch(()=>{ advance(); });
   }
   playOne();
 }

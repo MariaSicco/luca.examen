@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La Agencia — el juego de Valoración Aduanera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f4;--paper:#fff;--ink:#1c2229;--muted:#5c6672;--line:#dde3ea;
+  --brand:#8a1c1c;--brand-soft:#f3e3df;
+  --concept:#22548c;--concept-soft:#e4edf6;--concept-line:#bcd2ea;
+  --ok:#1f7a4d;--ok-soft:#e3f2e9;--ok-line:#bfe0cd;
+  --err:#b5451d;--err-soft:#fbe8e0;--err-line:#f0cbb9;
+  --gold:#9a7414;--gold-soft:#f6edd6;--gold-line:#e6d3a3;
+  --purple:#7a3c9a;--purple-soft:#efe4f5;
+  --navy:#14263d;
+  --r:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.5;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.01em;margin:0}
+.hide{display:none!important}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:30;background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0}
+.logo-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#c9a23a,#8a1c1c);display:grid;place-items:center;font-family:Fraunces;font-weight:700;font-size:18px;flex:none}
+.logo b{font-family:Fraunces;font-size:1.08rem;font-weight:700;display:block;line-height:1.1;white-space:nowrap}
+.logo small{font-size:.7rem;opacity:.7;display:block;white-space:nowrap}
+.top .sp{flex:1}
+.rankpill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:5px 12px;font-size:.78rem;font-weight:600;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.rankpill .xp{color:#f2cf6a}
+.tbtn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:10px;padding:7px 10px;font-size:.82rem;font-weight:600;white-space:nowrap}
+.tbtn:hover{background:rgba(255,255,255,.16)}
+@media(max-width:640px){.logo small,.rankpill .rn,.tbtn .lbl{display:none}.top{gap:8px;padding:9px 12px}}
+
+.wrap{max-width:980px;margin:0 auto;padding:22px 16px 90px}
+
+/* ---------- map ---------- */
+.hero{background:linear-gradient(135deg,#14263d 0%,#22548c 100%);color:#fff;border-radius:22px;padding:26px 26px 22px;position:relative;overflow:hidden}
+.hero h1{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.1}
+.hero p{opacity:.88;max-width:560px;margin:10px 0 0}
+.hero .ship{position:absolute;right:-10px;bottom:-14px;opacity:.16;width:240px}
+.herostats{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.hs{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:8px 14px}
+.hs b{display:block;font-family:Fraunces;font-size:1.25rem}
+.hs span{font-size:.72rem;opacity:.8;text-transform:uppercase;letter-spacing:.05em}
+.rankbar{margin-top:16px;max-width:520px}
+.rankbar .trk{height:8px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden}
+.rankbar .fill{height:100%;background:linear-gradient(90deg,#f2cf6a,#e59a3a);border-radius:99px;transition:width .6s}
+.rankbar .lb{display:flex;justify-content:space-between;font-size:.74rem;opacity:.85;margin-top:5px}
+
+.zone{margin-top:26px;background:var(--paper);border-radius:22px;padding:22px 18px 26px;border:1px solid var(--line)}
+.zonehead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.ztag{background:var(--concept);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:99px}
+.zonehead h2{font-size:1.45rem}
+.zonehead .zp{margin-left:auto;font-size:.85rem;color:var(--muted);font-weight:600}
+.zonesub{color:var(--muted);font-size:.92rem;margin:0 0 10px}
+.path{position:relative;padding:10px 0}
+.node{display:flex;align-items:center;gap:16px;position:relative;margin:0 auto;max-width:640px;padding:10px 0}
+.node:nth-child(4n+2){transform:translateX(9%)}
+.node:nth-child(4n+3){transform:translateX(15%)}
+.node:nth-child(4n+4){transform:translateX(6%)}
+.node:nth-child(4n+1){transform:translateX(-4%)}
+.nbtn{flex:none;width:74px;height:74px;border-radius:50%;border:none;position:relative;display:grid;place-items:center;font-family:Fraunces;font-weight:700;font-size:1.45rem;color:#fff;background:var(--concept);box-shadow:0 6px 0 #173b63,0 10px 18px rgba(34,84,140,.25);transition:transform .12s}
+.nbtn:active{transform:translateY(3px);box-shadow:0 3px 0 #173b63}
+.node.done .nbtn{background:var(--ok);box-shadow:0 6px 0 #145234,0 10px 18px rgba(31,122,77,.25)}
+.node.locked .nbtn{background:#c3cad3;box-shadow:0 6px 0 #9aa3ae;color:#eef1f4;cursor:not-allowed}
+.node.current .nbtn{animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 6px 0 #173b63,0 0 0 0 rgba(34,84,140,.45)}50%{box-shadow:0 6px 0 #173b63,0 0 0 14px rgba(34,84,140,0)}}
+.nbtn .crit{position:absolute;top:-4px;right:-4px;background:var(--gold);color:#fff;font-size:.7rem;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:Inter;border:2px solid #fff}
+.ninfo{min-width:0}
+.ninfo .nt{font-size:.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.ninfo h3{font-size:1.05rem;line-height:1.2;margin:2px 0}
+.ninfo .ns{font-size:.82rem;color:var(--muted)}
+.stars{color:#d6a51c;letter-spacing:2px;font-size:.95rem}
+.stars .off{color:#cfd5dc}
+.zonelock{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.zl{border:2px dashed var(--line);border-radius:18px;padding:16px;color:var(--muted);background:#fafbfc}
+.zl b{display:block;font-family:Fraunces;font-size:1.1rem;color:var(--ink)}
+@media(max-width:640px){.hs{padding:6px 10px}.hs b{font-size:1.05rem}.hs span{font-size:.62rem}.hero{padding:22px 18px 18px}.zonelock{grid-template-columns:1fr}.node{transform:none!important}.nbtn{width:62px;height:62px;font-size:1.2rem}}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.mode{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px 18px;text-align:left;display:flex;gap:14px;align-items:center}
+.mode:hover{border-color:var(--concept-line);background:#fbfdff}
+.mode .mi{font-size:1.8rem;flex:none}
+.mode b{display:block;font-family:Fraunces;font-size:1.08rem}
+.mode span{font-size:.84rem;color:var(--muted)}
+.mode[disabled]{opacity:.5;cursor:not-allowed}
+@media(max-width:640px){.modes{grid-template-columns:1fr}}
+
+/* ---------- level ---------- */
+.lvtop{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.xbtn{background:var(--paper);border:1px solid var(--line);border-radius:12px;width:42px;height:42px;font-size:1.1rem;flex:none}
+.prog{flex:1;height:12px;background:#dfe4ea;border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,#2f7fd0,#1f7a4d);border-radius:99px;transition:width .4s}
+.lvcount{font-size:.82rem;color:var(--muted);font-weight:700;white-space:nowrap}
+.card{background:var(--paper);border-radius:var(--r);border:1px solid var(--line);padding:22px;box-shadow:0 2px 0 rgba(20,38,61,.04);animation:rise .35s ease}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.who{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.av{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-family:Fraunces;font-weight:700;color:#fff;font-size:1.15rem;flex:none}
+.who b{display:block;font-size:.95rem}
+.who span{font-size:.78rem;color:var(--muted)}
+.bubble{background:#f5f7fa;border-radius:4px 16px 16px 16px;padding:14px 16px;font-size:1rem}
+.steptag{display:inline-block;font-size:.7rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:4px 10px;border-radius:99px;margin-bottom:10px}
+.tag-brief{background:var(--concept-soft);color:var(--concept)}
+.tag-choice{background:var(--purple-soft);color:var(--purple)}
+.tag-classify,.tag-order{background:var(--gold-soft);color:var(--gold)}
+.tag-calc{background:var(--ok-soft);color:var(--ok)}
+.tag-spot{background:var(--err-soft);color:var(--err)}
+.card h2{font-size:1.35rem;line-height:1.2;margin-bottom:10px}
+.q{font-size:1.08rem;font-weight:600;margin:4px 0 14px}
+.key{margin-top:14px;background:var(--concept-soft);border-left:4px solid var(--concept);border-radius:10px;padding:12px 14px;font-size:.95rem}
+.key b:first-child{color:var(--concept)}
+.trap{margin-top:12px;background:var(--err-soft);border-left:4px solid var(--err);border-radius:10px;padding:12px 14px;font-size:.93rem}
+.verify{display:inline-block;background:var(--gold-soft);border:1px solid var(--gold-line);color:#7a5a09;font-size:.76rem;font-weight:700;border-radius:8px;padding:2px 8px;margin:0 2px}
+.reveal-list{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-direction:column;gap:8px}
+.reveal-list li{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;animation:rise .3s ease;display:flex;gap:10px}
+.reveal-list li .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--concept);color:#fff;font-size:.78rem;font-weight:700;display:grid;place-items:center;margin-top:1px}
+.speak{background:var(--concept-soft);border:1px solid var(--concept-line);color:var(--concept);border-radius:99px;padding:5px 12px;font-size:.8rem;font-weight:700;float:right;margin-left:10px}
+.speak.on{background:var(--concept);color:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:.88rem;margin:10px 0}
+.tbl th,.tbl td{border:1px solid var(--line);padding:6px 8px;text-align:left}
+.tbl th{background:#f3f6f9;font-weight:700}
+.tbl td.r,.tbl th.r{text-align:right;font-variant-numeric:tabular-nums}
+.tscroll{overflow-x:auto}
+
+/* options */
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;background:#fff;border:2px solid var(--line);border-bottom-width:4px;border-radius:14px;padding:13px 16px;font-size:.98rem;color:var(--ink);transition:all .12s}
+.opt:hover:not([disabled]){border-color:var(--concept-line);background:#fbfdff}
+.opt.good{border-color:var(--ok);background:var(--ok-soft)}
+.opt.bad{border-color:var(--err);background:var(--err-soft);opacity:.75}
+.opt[disabled]{cursor:default}
+
+/* chips / buckets */
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:12px;background:#f5f7fa;border-radius:14px;border:1px dashed var(--line);margin-bottom:14px}
+.chip{background:#fff;border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;padding:8px 12px;font-size:.9rem;font-weight:500;color:var(--ink);touch-action:none;user-select:none;-webkit-user-select:none;max-width:100%;text-align:left}
+.chip.sel{border-color:var(--concept);background:var(--concept-soft);transform:translateY(-2px)}
+.chip.placed{border-color:var(--ok-line);background:var(--ok-soft);border-bottom-width:2px;cursor:default;font-size:.84rem}
+.chip.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.ghost{position:fixed;z-index:99;pointer-events:none;opacity:.92;transform:rotate(-3deg);box-shadow:0 10px 24px rgba(0,0,0,.2)}
+.buckets{display:grid;gap:12px}
+.bucket{border:2px solid var(--line);border-radius:16px;padding:10px;min-height:96px;background:#fff;transition:all .12s}
+.bucket.hot{border-color:var(--concept);background:var(--concept-soft)}
+.bucket h4{margin:0 0 8px;font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:6px}
+.bucket .in{display:flex;flex-wrap:wrap;gap:6px}
+.b-ok h4{color:var(--ok)}.b-err h4{color:var(--err)}.b-con h4{color:var(--concept)}.b-gold h4{color:var(--gold)}.b-pur h4{color:var(--purple)}
+.hintline{font-size:.8rem;color:var(--muted);margin:-6px 0 10px}
+.slots{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.slot{display:flex;align-items:center;gap:10px;border:2px dashed var(--line);border-radius:12px;padding:8px 10px;min-height:46px;background:#fff}
+.slot .sn{flex:none;width:28px;height:28px;border-radius:50%;background:#e9edf2;color:var(--muted);font-weight:800;display:grid;place-items:center;font-size:.85rem}
+.slot.filled{border-style:solid;border-color:var(--ok-line);background:var(--ok-soft)}
+.slot.filled .sn{background:var(--ok);color:#fff}
+.slot.next{border-color:var(--concept)}
+
+/* calc */
+.doc{background:#fffdf7;border:1px solid #eadfbf;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:.9rem;box-shadow:inset 0 0 0 4px #fffaf0}
+.doc .dh{font-family:Fraunces;font-weight:700;font-size:1rem;display:flex;justify-content:space-between;border-bottom:1px dashed #d9caa0;padding-bottom:6px;margin-bottom:8px}
+.doc .dl{display:flex;justify-content:space-between;gap:14px;padding:3px 0}
+.doc .dl span:last-child{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.field{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:#fff}
+.field.done{background:var(--ok-soft);border-color:var(--ok-line)}
+.field.locked{opacity:.45;pointer-events:none}
+.field label{font-weight:600;font-size:.93rem;display:block;margin-bottom:8px}
+.frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.frow .u{font-weight:700;color:var(--muted);font-size:.85rem}
+.frow input{flex:1;min-width:130px;font:inherit;font-size:1.02rem;padding:10px 12px;border:2px solid var(--line);border-radius:10px;font-variant-numeric:tabular-nums}
+.frow input:focus{outline:none;border-color:var(--concept)}
+.btn{border:none;border-radius:12px;padding:11px 18px;font-weight:700;font-size:.95rem;background:var(--concept);color:#fff;border-bottom:3px solid #173b63}
+.btn:active{transform:translateY(2px);border-bottom-width:1px}
+.btn.ghostb{background:#fff;color:var(--concept);border:2px solid var(--concept-line)}
+.btn.okb{background:var(--ok);border-bottom-color:#145234}
+.btn.big{padding:14px 22px;font-size:1.02rem;width:100%}
+.fmsg{font-size:.88rem;margin-top:8px}
+.fmsg.e{color:var(--err)}.fmsg.o{color:var(--ok)}
+.howbtn{background:none;border:none;color:var(--concept);font-weight:700;font-size:.85rem;padding:6px 0;text-decoration:underline}
+
+/* spot */
+.sdoc{background:#fffdf7;border:1px solid #eadfbf;border-radius:12px;overflow:hidden;margin-bottom:12px}
+.sdoc .dh{font-family:Fraunces;font-weight:700;padding:12px 16px;border-bottom:1px dashed #d9caa0;display:flex;justify-content:space-between;gap:10px}
+.srow{display:flex;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #f1e9d2;cursor:pointer;font-size:.92rem;transition:background .1s;width:100%;background:none;border-left:none;border-right:none;border-top:none;text-align:left;color:var(--ink)}
+.srow:hover{background:#fff6dc}
+.srow span:last-child{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.srow.found{background:var(--err-soft);text-decoration:line-through;text-decoration-color:var(--err)}
+.srow.fine{background:var(--ok-soft)}
+.foundc{font-weight:700;font-size:.9rem;color:var(--err)}
+
+/* feedback sheet */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;transform:translateY(110%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1);padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.sheet.show{transform:none;visibility:visible}
+.sheet .in{max-width:980px;margin:0 auto;border-radius:18px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;box-shadow:0 -6px 30px rgba(0,0,0,.18)}
+.sheet.ok .in{background:#e3f2e9;border:2px solid var(--ok)}
+.sheet.err .in{background:#fbe8e0;border:2px solid var(--err)}
+.sheet .ic{font-size:1.8rem;line-height:1}
+.sheet .tx{flex:1;min-width:0}
+.sheet .tx b{display:block;font-family:Fraunces;font-size:1.15rem}
+.sheet.ok .tx b{color:var(--ok)}.sheet.err .tx b{color:var(--err)}
+.sheet .tx p{margin:4px 0 0;font-size:.94rem}
+.sheet .btn{flex:none;align-self:center}
+.sheet.err .btn{background:var(--err);border-bottom-color:#7d2f13}
+.sheet.ok .btn{background:var(--ok);border-bottom-color:#145234}
+@media(max-width:640px){.sheet .in{flex-wrap:wrap}.sheet .btn{width:100%}}
+.cont{margin-top:18px;display:flex;justify-content:flex-end}
+
+/* end */
+.endc{text-align:center}
+.endc .medal{font-size:3.6rem;animation:pop .6s ease}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.endc .bigstars{font-size:2.3rem;letter-spacing:6px;color:#d6a51c}
+.endc .bigstars .off{color:#d8dde3}
+.kv{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:14px 0}
+.kv div{background:#f5f7fa;border-radius:12px;padding:8px 16px}
+.kv b{display:block;font-family:Fraunces;font-size:1.3rem}
+.kv span{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.canans{text-align:left;margin-top:18px}
+.canans h3{font-size:1.15rem;margin-bottom:4px}
+.canans .sub{color:var(--muted);font-size:.88rem;margin-bottom:10px}
+details.fq{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:#fff}
+details.fq summary{padding:12px 14px;cursor:pointer;font-weight:600;font-size:.95rem;list-style:none;display:flex;gap:10px;align-items:flex-start}
+details.fq summary::-webkit-details-marker{display:none}
+details.fq summary .badge{flex:none;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;border-radius:99px;background:var(--gold-soft);color:var(--gold);margin-top:2px}
+details.fq summary .badge.esc{background:var(--concept-soft);color:var(--concept)}
+details.fq .ans{padding:0 14px 14px;font-size:.92rem;color:#2c3540}
+.learned{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.learned span{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-line);border-radius:99px;padding:4px 10px;font-size:.8rem;font-weight:600}
+.endbtns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.endbtns .btn{flex:1;min-width:180px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:80}
+
+/* intro */
+.introcase{border:2px solid var(--gold-line);background:linear-gradient(180deg,#fffaf0,#fff)}
+.objs{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:6px}
+.objs li{font-size:.92rem;padding-left:26px;position:relative}
+.objs li:before{content:"◆";position:absolute;left:6px;color:var(--gold);font-size:.75rem;top:3px}
+
+/* libreta */
+.lib h2{font-size:1.6rem;margin-bottom:4px}
+.libcase{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:14px}
+.libcase h3{font-size:1.1rem;margin-bottom:8px}
+.libnote{border-left:3px solid var(--concept);padding:6px 12px;margin:8px 0;font-size:.92rem;background:#f8fafc;border-radius:0 8px 8px 0}
+.libnote b{color:var(--concept)}
+.libnote.trap{border-left-color:var(--err);background:#fdf6f3}
+.libnote.trap b{color:var(--err)}
+.empty{color:var(--muted);font-style:italic}
+.backlink{color:#fff;text-decoration:none}
+.modal{position:fixed;inset:0;background:rgba(20,38,61,.45);z-index:90;display:grid;place-items:center;padding:20px}
+.modal .mb{background:#fff;border-radius:18px;padding:22px;max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.25);animation:rise .25s}
+.modal h3{font-size:1.2rem;margin-bottom:6px}
+.modal p{color:var(--muted);font-size:.92rem;margin:0 0 16px}
+.modal .row{display:flex;gap:10px}.modal .row .btn{flex:1}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo" id="goHome"><div class="logo-mark">A</div><div><b>La Agencia</b><small>Carrera de despachante · Valoración Aduanera</small></div></div>
+  <div class="sp"></div>
+  <div class="rankpill"><span class="rn" id="rankName">Pasante</span><span class="xp" id="xpVal">0 XP</span></div>
+  <button class="tbtn" id="btnLib">📒<span class="lbl"> Libreta</span></button>
+  <button class="tbtn" id="btnSnd" title="Sonido">🔔</button>
+  <a class="tbtn backlink" href="index.html">📖<span class="lbl"> Libro</span></a>
+</header>
+
+<main class="wrap" id="app"></main>
+
+<div class="sheet" id="sheet"><div class="in"><div class="ic" id="shIc"></div><div class="tx"><b id="shT"></b><p id="shP"></p></div><button class="btn" id="shBtn">Seguir</button></div></div>
+<canvas id="confetti"></canvas>
+
+<script>
+var VER='<span class="verify">⚑ verificar con la cátedra</span>';
+function doc(title,right,lines){return '<div class="doc"><div class="dh"><span>'+title+'</span><span>'+(right||'')+'</span></div>'+lines.map(function(l){return '<div class="dl"><span>'+l[0]+'</span><span>'+l[1]+'</span></div>';}).join('')+'</div>';}
+var LEVELS=[];
+
+/* ===================== CASO 1 · TEMA 1 ===================== */
+LEVELS.push({id:'t01',tema:'01',title:'Primer día en la agencia',sub:'Marco general: el Acuerdo del art. VII del GATT',
+client:{id:'c01',n:'Don Rubén Acosta',r:'Importador de repuestos · primer cliente',c:'#8a1c1c',i:'R'},
+intro:'Es tu primer día. Marta te sienta frente a Don Rubén, que importa repuestos hace 30 años y desconfía de todo: <i>"¿Por qué la aduana me cobra sobre un número que no es el que yo pagué? ¿Quién inventó esto?"</i> Marta te mira: <b>"Explicale vos. Yo te ayudo."</b>',
+objs:['Qué es el valor en aduana y para qué sirve','De dónde viene el Acuerdo (DVB → Ronda de Tokio)','Cómo llegó a la Argentina: Ley 23.311, Dec. 1026/87, Ley 24.425','Las partes del Acuerdo y su jerarquía','Los 6 métodos en cascada y la excepción del art. 4','El art. 17, la duda razonable y el fallo Peckaitis'],
+steps:[
+{t:'brief',title:'La única pregunta que resuelve la valoración',html:'Todo el sistema existe para responder una sola pregunta: <b>¿sobre qué monto se calculan los derechos e impuestos de importación?</b> Ese monto es el <b>valor en aduana</b>. Valuar de más es cobrar tributos de más; valuar de menos, recaudar de menos. Por eso el mundo necesitó una regla común.',
+ key:'El valor en aduana es, como regla, el <b>valor de transacción</b>: el precio realmente pagado o por pagar por la mercadería vendida para exportación al país de importación, <b>ajustado según el art. 8</b>.'},
+{t:'choice',who:'c01',q:'"A ver, pibe: ¿para qué sirve ese famoso valor en aduana?"',opts:[
+ {x:'Es la base sobre la que se calculan los derechos e impuestos de importación',ok:true,why:'Exacto. Es el "precio de referencia" sobre el que la aduana pasa la calculadora de tributos.'},
+ {x:'Es el precio al que vas a revender la mercadería en el país',why:'No. El precio de reventa interno es otra cosa (aparece recién en el método deductivo). El valor en aduana es la <b>base imponible</b> de los tributos de importación.'},
+ {x:'Es lo que cuesta el flete internacional',why:'El flete es apenas un componente que se suma (art. 8). El valor en aduana es la base sobre la que se liquidan los tributos.'},
+ {x:'Es un precio mínimo que fija la aduana para cada producto',why:'No: los valores mínimos están justamente <b>prohibidos</b> por el sistema. El valor en aduana parte del precio real de la operación.'}]},
+{t:'brief',title:'De dónde viene: el problema de Bruselas',html:'Desde los años 50 muchos países usaban la <b>Definición del Valor de Bruselas (DVB)</b>. Tenía problemas serios:',
+ bullets:['Fijaba un <b>precio normal teórico</b>: el que se pagaría en un mercado libre entre partes independientes. Era una construcción de la aduana, no el precio real.','Las bajas de precio solo se reconocían <b>hasta un 10%</b>.','Los productos nuevos o raros <b>no figuraban</b> en las listas.','El comercio no se sentía representado y <b>Estados Unidos nunca adhirió</b>.','La <b>Ronda de Tokio (1979)</b> lo resolvió con el Acuerdo relativo a la aplicación del <b>art. VII del GATT</b>: un <b>sistema positivo</b>, que valúa según el precio real de la transacción.','Su preámbulo busca un sistema <b>equitativo, uniforme y neutro</b>, ajustado a las realidades comerciales, con beneficios adicionales para los países en desarrollo.'],
+ key:'El Acuerdo reemplazó un valor <b>teórico</b> (DVB) por el precio <b>real</b> de la transacción (sistema positivo).'},
+{t:'classify',q:'Don Rubén mezcla todo. Separá qué era de la vieja DVB y qué es del Acuerdo del GATT.',buckets:[{id:'dvb',label:'🏛 Definición de Bruselas (DVB)',cls:'b-err'},{id:'gatt',label:'🌐 Acuerdo art. VII GATT',cls:'b-ok'}],items:[
+ {x:'Precio normal teórico',b:'dvb',why:'El precio "normal" teórico era la base de la DVB: una construcción de la aduana.'},
+ {x:'Bajas de precio reconocidas solo hasta un 10%',b:'dvb',why:'Esa era una de las limitaciones de la DVB.'},
+ {x:'Productos nuevos fuera de las listas',b:'dvb',why:'Problema típico de la DVB: lo que no estaba en la lista no tenía referencia.'},
+ {x:'EE.UU. nunca adhirió',b:'dvb',why:'Fue a la DVB a la que EE.UU. nunca adhirió.'},
+ {x:'Precio real de la transacción',b:'gatt',why:'El Acuerdo es un sistema positivo: parte del precio real.'},
+ {x:'Ronda de Tokio, 1979',b:'gatt',why:'El Acuerdo nació en la Ronda de Tokio (1979).'},
+ {x:'Equitativo, uniforme y neutro',b:'gatt',why:'Son las finalidades que fija el preámbulo del Acuerdo.'},
+ {x:'Sistema positivo',b:'gatt',why:'"Positivo" = se valúa por el precio realmente pactado, no por uno teórico.'}],
+ done:'La DVB valuaba con un precio teórico; el Acuerdo valúa con el precio real.'},
+{t:'brief',title:'Cómo llegó a la Argentina',html:'Tres normas que tenés que poder nombrar:',
+ bullets:['<b>Ley 23.311</b> — aprobó el Acuerdo. Vigencia práctica desde <b>1988</b>.','<b>Decreto 1026/87</b> — lo reglamentó. Define el <b>"lugar de importación"</b> (el Acuerdo no lo define) y dispone incluir flete, seguro y gastos conexos: Argentina valora sobre <b>base CIF</b>.','<b>Ley 24.425 (1994)</b> — aprobó el Acuerdo de Marrakech (creación de la <b>OMC</b>) e incorporó la <b>Decisión del Comité</b> sobre dudas razonables del valor declarado (complementa el art. 17).','División clave: en <b>importación</b> rige el Acuerdo GATT/OMC; en <b>exportación</b> sigue rigiendo el <b>Código Aduanero</b> (Unidad 2).'],
+ key:'Ley 23.311 (aprobó, vigencia 1988) · Dec. 1026/87 (reglamentó: lugar de importación + base CIF) · Ley 24.425 (OMC + Decisión de dudas razonables).',
+ trap:'Tener clara la división impo/expo es media materia: impo → Acuerdo del GATT; expo → Código Aduanero.'},
+{t:'classify',q:'Uní cada norma con lo que hizo.',buckets:[{id:'a',label:'Ley 23.311',cls:'b-con'},{id:'b',label:'Dec. 1026/87',cls:'b-gold'},{id:'c',label:'Ley 24.425',cls:'b-pur'}],items:[
+ {x:'Aprobó el Acuerdo del GATT',b:'a',why:'Fue la Ley 23.311 la que aprobó el Acuerdo.'},
+ {x:'Vigencia práctica desde 1988',b:'a',why:'La Ley 23.311 rige en la práctica desde 1988.'},
+ {x:'Define el "lugar de importación"',b:'b',why:'El Acuerdo no lo define: lo hace el Decreto 1026/87.'},
+ {x:'Argentina valora sobre base CIF',b:'b',why:'El Dec. 1026/87 dispone incluir flete, seguro y gastos conexos.'},
+ {x:'Aprobó Marrakech (creación de la OMC)',b:'c',why:'La Ley 24.425 (1994) aprobó el Acuerdo de Marrakech.'},
+ {x:'Incorporó la Decisión sobre dudas razonables',b:'c',why:'La Ley 24.425 incorporó la Decisión del Comité que complementa el art. 17.'}]},
+{t:'choice',who:'c01',q:'"Mi sobrino exporta yerba a Chile. ¿A él también le valúan con este Acuerdo del GATT?"',opts:[
+ {x:'No: la valoración de exportación sigue rigiéndose por el Código Aduanero',ok:true,why:'Correcto. Argentina adoptó el régimen GATT/OMC para <b>importación</b>; para <b>exportación</b> sigue el Código Aduanero.'},
+ {x:'Sí, el Acuerdo rige igual para importación y exportación',why:'No. Esa es la confusión clásica: el Acuerdo del GATT rige la <b>importación</b>. La exportación se valúa por el <b>Código Aduanero</b>.'},
+ {x:'Depende del Incoterm que use',why:'El Incoterm cambia los ajustes, no el régimen. La exportación se valúa por el Código Aduanero.'}]},
+{t:'brief',title:'Las partes del Acuerdo',html:'El Acuerdo no es solo el articulado. Su estructura completa:',
+ bullets:['<b>Preámbulo</b>: fija la finalidad — uniformidad, equidad, neutralidad; aceptar el precio de las partes.','<b>Articulado</b> (arts. 1 a 8 y siguientes): los seis métodos, los ajustes y las reglas generales.','<b>Notas interpretativas</b>: <b>forman parte del Acuerdo</b> y tienen su misma fuerza. Aclaran cómo aplicar cada artículo.','<b>Textos del Comité Técnico de Valoración (OMA)</b>: opiniones consultivas, comentarios, notas explicativas, estudios de casos. <b>Orientan</b> la interpretación.'],
+ trap:'Creer que las notas interpretativas son "doctrina" o material secundario. Integran el Acuerdo con la misma jerarquía del artículo que interpretan. Los textos del Comité Técnico, en cambio, orientan pero no tienen esa fuerza vinculante plena.'},
+{t:'choice',q:'En un escrito, ¿qué valor le das a las notas interpretativas?',opts:[
+ {x:'Forman parte del Acuerdo, con la misma jerarquía que el artículo que interpretan',ok:true,why:'Así es. Por eso se citan con la misma fuerza que el artículo.'},
+ {x:'Son doctrina orientativa, como los textos del Comité Técnico',why:'Esa es la trampa. Lo orientativo son los textos del <b>Comité Técnico (OMA)</b>. Las notas interpretativas <b>integran</b> el Acuerdo.'},
+ {x:'Solo valen si el país las adopta por decreto',why:'No hace falta: son parte del propio Acuerdo.'}]},
+{t:'brief',title:'Los seis métodos, en cascada',html:'El corazón del sistema: <b>seis métodos que se aplican uno después del otro</b>. Solo se pasa al siguiente cuando el anterior no puede aplicarse. <b>No se elige el más cómodo.</b> Ojo: el 4º método es el art. 5 — el art. 4 no es un método, es la regla de inversión.',
+ key:'1º Valor de transacción (art. 1 + ajustes art. 8) · 2º Idénticas (art. 2) · 3º Similares (art. 3) · 4º Deductivo (art. 5) · 5º Reconstruido (art. 6) · 6º Último recurso (art. 7). <b>Art. 4</b>: el importador puede pedir invertir el 5º y el 6º.'},
+{t:'order',q:'Armá la cascada de los 6 métodos, del primero al último.',items:[
+ {x:'Valor de transacción · art. 1',why:'Siempre se arranca por el precio real de la operación.'},
+ {x:'Mercaderías idénticas · art. 2',why:'Si no hay art. 1, se busca primero mercadería idéntica.'},
+ {x:'Mercaderías similares · art. 3',why:'Solo si no hay idénticas se pasa a similares.'},
+ {x:'Método deductivo · art. 5',why:'Después viene el deductivo (art. 5). El art. 4 no es un método.'},
+ {x:'Valor reconstruido · art. 6',why:'El reconstruido va 5º (salvo inversión del art. 4).'},
+ {x:'Último recurso · art. 7',why:'El art. 7 es la red de seguridad final.'}],
+ done:'Orden sucesivo y excluyente: se baja solo cuando el anterior no aplica.'},
+{t:'choice',who:'c01',q:'"Si el método de las idénticas me da más barato que el valor de transacción, ¿puedo pedir que usen ese?"',opts:[
+ {x:'No: el orden es sucesivo y excluyente; si el art. 1 aplica, se usa el art. 1',ok:true,why:'Exacto. El sistema da previsibilidad: se sabe de antemano qué método corresponde.'},
+ {x:'Sí, el importador elige el método que más le convenga',why:'No. Nadie elige por conveniencia: ni el importador ni la aduana. Se baja en cascada solo si el anterior no aplica.'},
+ {x:'Sí, gracias al art. 4',why:'El art. 4 solo permite invertir el <b>5º (deductivo) y el 6º (reconstruido)</b>, a pedido del importador. Nada más.'}]},
+{t:'choice',q:'¿Qué permite exactamente el art. 4?',opts:[
+ {x:'Invertir el orden entre el deductivo (art. 5) y el reconstruido (art. 6), a pedido del importador',ok:true,why:'Es la única flexibilidad de orden de todo el sistema (y la aduana tiene que aceptarlo).'},
+ {x:'Saltear el art. 1 cuando hay vinculación',why:'No. La vinculación se analiza dentro del art. 1 (Tema 3). El art. 4 solo invierte el 5º y el 6º.'},
+ {x:'Que la aduana elija libremente el método',why:'No. El art. 4 es una facultad del importador y se limita a invertir deductivo y reconstruido.'},
+ {x:'Invertir idénticas y similares',why:'No: idénticas siempre va antes que similares. La inversión es entre el 5º y el 6º.'}]},
+{t:'brief',title:'El derecho de la aduana a dudar',html:'El sistema acepta el precio de las partes, pero <b>no obliga a la aduana a creer todo</b>. El <b>art. 17</b> dice que nada del Acuerdo restringe el derecho de la aduana a comprobar la veracidad o exactitud de lo declarado. La <b>Decisión del Comité</b> (incorporada por la Ley 24.425 y receptada por la <b>RG AFIP 1907/05</b>, "Sistema de Control de Valor") reglamenta la <b>duda razonable</b>.',
+ key:'Art. 17: la aduana conserva el derecho de comprobar la veracidad y exactitud de toda información, documento o declaración presentada a efectos de la valoración.'},
+{t:'order',q:'Ordená el procedimiento de duda razonable.',items:[
+ {x:'La aduana tiene motivos para dudar del valor declarado',why:'Todo empieza con un motivo de duda.'},
+ {x:'Pide al importador explicación y pruebas complementarias',why:'Antes de decidir, tiene que darle al importador la chance de explicar.'},
+ {x:'Si persisten las dudas, decide que el valor no se determina por el art. 1',why:'Recién si la duda sigue puede apartarse del art. 1 y pasar a métodos alternativos.'},
+ {x:'Comunica por escrito sus motivos, da oportunidad de responder y notifica la decisión fundada',why:'Todo con comunicación escrita y fundada.'}]},
+{t:'brief',title:'El fallo que tenés que citar: Peckaitis',html:'<b>"Aurelio Peckaitis S.A."</b> (Cámara CAF, Sala IV, 11/10/2001). La Cámara dijo dos cosas:',
+ bullets:['Que un precio sea <b>inferior a los precios corrientes de mercado no basta</b> para rechazarlo (<b>Opinión Consultiva 2.1</b> del Comité Técnico).','Que la aduana, al aplicar un método alternativo, <b>tampoco puede fijar valores arbitrarios</b>: le reprocharon basar el ajuste en un auto con <b>motor y año de modelo distintos</b> al valuado.'],
+ key:'Regla de oro (art. 17 + Peckaitis): ni el importador puede declarar cualquier cosa, ni la aduana puede ajustar con cualquier fundamento. Ambos necesitan datos objetivos y cuantificables.'},
+{t:'choice',who:'aduana',q:'La aduana ve que la factura de Don Rubén está 30% debajo del precio de mercado. ¿Qué puede hacer?',opts:[
+ {x:'Solo por eso no puede rechazarlo: necesita otra causa y seguir el procedimiento de duda razonable',ok:true,why:'Correcto: Opinión Consultiva 2.1 y Peckaitis. Precio bajo ≠ precio falso. Puede dudar (art. 17), pedir pruebas y, si persiste la duda fundada, apartarse del art. 1.'},
+ {x:'Rechazarlo automáticamente y aplicar un valor de referencia',why:'No. Un precio inferior al de mercado no basta (OC 2.1 / Peckaitis). Y los valores mínimos o arbitrarios están prohibidos.'},
+ {x:'Nada: el art. 1 la obliga a aceptar siempre el precio declarado',why:'Tampoco. El art. 17 le reserva el derecho a comprobar. La clave es el procedimiento: pedir explicación, pruebas y decidir por escrito y fundado.'}]},
+{t:'choice',who:'aduana',q:'Si la aduana termina ajustando, ¿qué error le reprocharon en Peckaitis?',opts:[
+ {x:'Comparar con un auto de motor y año de modelo distintos: un valor arbitrario',ok:true,why:'Exacto. La aduana también necesita datos objetivos y comparables.'},
+ {x:'No haber aplicado la Definición de Bruselas',why:'La DVB ya no rige. El reproche fue usar una comparación no equivalente (otro motor y año).'},
+ {x:'Haber usado el art. 17',why:'Usar el art. 17 está bien. El problema fue ajustar con un fundamento arbitrario.'}]}
+],
+finals:[
+ {k:'Oral',q:'Explique la estructura del Acuerdo y por qué existen seis métodos.',a:'El Acuerdo del art. VII del GATT se compone de preámbulo (fija finalidad de uniformidad y neutralidad), articulado, notas interpretativas (que forman parte del Acuerdo con igual jerarquía) y textos del Comité Técnico (opiniones consultivas, comentarios, notas explicativas). Existen seis métodos aplicables en orden sucesivo y excluyente porque el sistema prioriza el precio real de la operación (valor de transacción) y solo recurre a alternativas cuando ese precio no existe o no es aceptable, garantizando previsibilidad. La única flexibilidad de orden es la del art. 4 (invertir arts. 5 y 6).'},
+ {k:'Escrito',q:'¿Cómo se concilia el principio de aceptar el precio de las partes con las facultades de control de la aduana?',a:'El principio rector (preámbulo) es aceptar el precio pactado. Pero el art. 17 reserva a la aduana el derecho de comprobar la veracidad y exactitud de lo declarado, y la Decisión del Comité (Ley 24.425, RG AFIP 1907/05) reglamenta la duda razonable: pedir explicaciones y pruebas y, si persisten dudas fundadas, apartarse del art. 1, siempre con comunicación escrita y fundada. Peckaitis marca el límite: ni el importador declara arbitrariamente ni la aduana ajusta sin fundamento objetivo.'},
+ {k:'Trampa',q:'¿Se puede elegir el método que dé menor valor?',a:'No. El orden es sucesivo y excluyente. La única flexibilidad es la inversión del 5º y 6º por el art. 4, a pedido del importador.'}]
+});
+
+/* ===================== CASO 2 · TEMA 2 ===================== */
+LEVELS.push({id:'t02',tema:'02',crit:true,title:'Los veladores de Canadá',sub:'Art. 1 — Valor de transacción',
+client:{id:'c02',n:'Sofía Benítez',r:'Luz Norte S.A. · importa iluminación',c:'#7a3c9a',i:'S'},
+intro:'Sofía trae su primera importación: <b>1.000 veladores desde Canadá</b>. Te muestra la factura FOB y dice: <i>"Declaramos lo que dice la factura y listo, ¿no?"</i> Marta levanta una ceja: <b>"Leé todo el expediente antes de firmar nada."</b>',
+objs:['Definir valor de transacción y precio realmente pagado o por pagar','Pagos directos, indirectos, a terceros y no dinerarios','Las 4 condiciones del art. 1 (R-C-R-V) y sus excepciones','Por qué la vinculación sola no descarta el art. 1','Armar el precio realmente pagado desde una factura'],
+steps:[
+{t:'brief',title:'El precio realmente pagado o por pagar',html:'Es el tema que hay que dominar sí o sí: todo lo demás se define por oposición a este método. El valor de transacción es como la factura mirada con lupa contable: no es solo el "total", sino <b>todo</b> lo que el comprador paga al vendedor o en su beneficio, esté escrito en la factura o escondido en otro pago.',
+ key:'Valor de transacción = precio realmente pagado o por pagar por las mercaderías importadas, cuando se venden para exportación al país de importación, <b>ajustado según el art. 8</b>. Precio realmente pagado = el <b>pago total</b> que el comprador haya hecho o vaya a hacer al vendedor, o en beneficio de éste.'},
+{t:'brief',title:'Tres precisiones que definen el concepto',html:'Para no equivocarte cuando el enunciado esconde pagos:',
+ bullets:['<b>Pagado o por pagar</b>: si se paga antes de importar → precio pagado; si se paga después → por pagar. Los dos valen.','<b>No solo dinero</b>: puede ser carta de crédito o instrumentos negociables. Directo o indirecto.','<b>Pago total</b>: incluye todos los pagos hechos como condición de venta, incluso a un <b>tercero</b> para satisfacer una obligación del vendedor.','<b>Pago indirecto</b>: el comprador cancela una deuda del vendedor con un tercero, o reduce el precio por una deuda del vendedor hacia él.']},
+{t:'classify',q:'¿Esto integra el precio realmente pagado o por pagar?',buckets:[{id:'si',label:'✔ Integra el precio',cls:'b-ok'},{id:'no',label:'✘ No integra',cls:'b-err'}],items:[
+ {x:'Pago hecho 60 días después de importar',b:'si',why:'Es precio "por pagar": vale igual que el pagado antes.'},
+ {x:'Pago con carta de crédito',b:'si',why:'El pago no tiene que ser en dinero: carta de crédito e instrumentos negociables valen.'},
+ {x:'USD 5.000 pagados a un tercero para saldar una deuda del vendedor',b:'si',why:'Pago indirecto: satisface una obligación del vendedor, entonces integra el precio.'},
+ {x:'Rebaja de precio para compensar una deuda del vendedor con el comprador',b:'si',why:'También es pago indirecto: el comprador "cobra" su crédito vía precio.'},
+ {x:'Una compra de muebles para la oficina del importador, sin relación con la venta',b:'no',why:'No es un pago al vendedor ni en su beneficio ni condición de venta.'}]},
+{t:'brief',title:'Las 4 condiciones: R-C-R-V',html:'Si falla <b>una sola</b>, no se puede usar el valor de transacción y se pasa a los métodos alternativos (arts. 2 a 7). Truco: <b>R-C-R-V</b>.',
+ bullets:['<b>R — Restricciones</b>: que no haya restricciones a la cesión o utilización por el comprador. <b>Excepciones permitidas</b>: las impuestas por la ley, las que limitan la zona geográfica de reventa y las que no afectan sustancialmente el valor.','<b>C — Condiciones o prestaciones</b>: que la venta no dependa de condiciones cuyo valor no pueda determinarse respecto de la mercadería.','<b>R — Reversión</b>: que ninguna parte del producto de una reventa, cesión o uso posterior revierta al vendedor, <b>salvo que pueda ajustarse por el art. 8</b>.','<b>V — Vinculación</b>: que no haya vinculación, o que existiendo <b>no haya influido en el precio</b>.'],
+ key:'R-C-R-V → Restricciones · Condiciones · Reversión · Vinculación. Son acumulativas.'},
+{t:'order',q:'Recitá las 4 condiciones en el orden del truco R-C-R-V.',items:[{x:'Restricciones'},{x:'Condiciones o prestaciones de valor indeterminable'},{x:'Reversión'},{x:'Vinculación que influye en el precio'}],hint:'Acordate: R-C-R-V.'},
+{t:'classify',q:'Sofía te cuenta cláusulas del contrato. ¿Alguna tumba el art. 1?',buckets:[{id:'ok',label:'✔ Se puede usar el art. 1',cls:'b-ok'},{id:'cae',label:'✘ Cae el art. 1',cls:'b-err'}],items:[
+ {x:'Una ley argentina limita la reventa de estos veladores',b:'ok',why:'Las restricciones impuestas por la ley son una excepción permitida.'},
+ {x:'Solo puede revenderlos en el NEA',b:'ok',why:'Limitar la zona geográfica de reventa es una excepción permitida.'},
+ {x:'No puede venderlos antes de la fecha de lanzamiento (no afecta el valor)',b:'ok',why:'Restricción que no afecta sustancialmente el valor: no invalida el art. 1.'},
+ {x:'Le venden barato si además compra otro producto, sin poder separar el precio',b:'cae',why:'Condición cuyo valor no puede determinarse: el precio está distorsionado. Cae el art. 1.'},
+ {x:'El 5% de la reventa vuelve al vendedor y se puede cuantificar',b:'ok',why:'Reversión cuantificable: se suma por el art. 8 y el art. 1 sigue en pie.'},
+ {x:'Parte de la reventa vuelve al vendedor pero no hay forma de cuantificarla',b:'cae',why:'Reversión no ajustable: no se puede sumar, entonces cae el art. 1.'},
+ {x:'Vendedor y comprador vinculados, pero la vinculación no influyó en el precio',b:'ok',why:'La vinculación sola no descarta el art. 1. Solo cuando influye en el precio.'},
+ {x:'Vinculación que sí influyó en el precio',b:'cae',why:'Ahí sí falla la "V" de R-C-R-V.'}]},
+{t:'choice',who:'c02',q:'"El proveedor canadiense es socio de mi papá. Entonces no podemos usar el valor de transacción, ¿no?"',opts:[
+ {x:'No necesariamente: hay que ver si la vinculación influyó en el precio',ok:true,why:'Exacto. Partes vinculadas pueden pactar precios de mercado válidos. Se examinan las circunstancias de la venta o se compara con valores criterio (Tema 3).'},
+ {x:'Correcto, la vinculación descarta siempre el art. 1',why:'Acá se desaprueba. La vinculación descarta el art. 1 <b>únicamente cuando influye en el precio</b>.'},
+ {x:'Hay que pasar directamente al último recurso',why:'No. Ni siquiera está descartado el art. 1; y aunque lo estuviera, se baja en cascada (art. 2, 3...).'}]},
+{t:'calc',who:'marta',q:'Armá el precio realmente pagado de la operación de Sofía.',doc:doc('Expediente Luz Norte S.A.','Canadá → Argentina',[['1.000 veladores · factura FOB','USD 57.000'],['Comisión pagada al agente de ventas del vendedor','USD 2.000'],['Deuda del vendedor con su proveedor de envases, pagada por Sofía','USD 1.000']]),
+ fields:[{label:'Precio realmente pagado o por pagar',unit:'USD',ans:60000,tol:0.5,hint:'No te quedes con el total de la factura: buscá los pagos que no están en esa línea.',how:'57.000 + 2.000 (comisión de venta) + 1.000 (pago indirecto) = USD 60.000'}],
+ done:'Sobre este precio después se siguen sumando los ajustes del art. 8 (flete, seguro, etc.) para llegar al valor en aduana.'},
+{t:'choice',q:'¿Por qué la deuda de USD 1.000 que pagó Sofía entra en el precio?',opts:[
+ {x:'Porque es un pago indirecto: satisface una obligación del vendedor',ok:true,why:'Pago a un tercero en beneficio del vendedor = parte del precio realmente pagado. Si se omite, se declara de menos.'},
+ {x:'Porque está en la factura',why:'Justamente no está en la factura. Entra por ser un pago indirecto en beneficio del vendedor.'},
+ {x:'No entra: es un gasto del comprador',why:'Es una deuda <b>del vendedor</b>; al pagarla Sofía, el vendedor se beneficia. Integra el precio.'}]}
+],
+finals:[
+ {k:'Escrito',q:'Desarrolle el concepto de precio realmente pagado o por pagar y sus formas de pago.',a:'Es el pago total que por las mercaderías importadas haya hecho o vaya a hacer el comprador al vendedor o en beneficio de éste. Comprende todos los pagos efectuados como condición de venta, incluidos los realizados a terceros para satisfacer obligaciones del vendedor. Puede ser pagado (antes de importar) o por pagar (después). No requiere forma dineraria: admite carta de crédito o instrumentos negociables, y puede ser directo o indirecto.'},
+ {k:'Oral',q:'Enumere y explique las condiciones para aplicar el valor de transacción.',a:'Cuatro condiciones acumulativas (R-C-R-V): 1) Restricciones — que no haya restricciones a la cesión/uso por el comprador, salvo las legales, geográficas o que no afecten el valor. 2) Condiciones/prestaciones — que la venta no dependa de condiciones de valor indeterminable. 3) Reversión — que ninguna parte de una reventa posterior revierta al vendedor, salvo que pueda ajustarse. 4) Vinculación — que no exista vinculación que influya en el precio. Si falla alguna, se descarta el art. 1 y se pasa, en orden, a los métodos alternativos.'},
+ {k:'Trampa',q:'"Hay vinculación, entonces no se usa el art. 1." ¿Verdadero?',a:'Falso. La vinculación descarta el art. 1 únicamente cuando influye en el precio. Hay que examinar las circunstancias de la venta o comparar con valores criterio.'}]
+});
+
+/* ===================== CASO 3 · TEMA 3 ===================== */
+LEVELS.push({id:'t03',tema:'03',crit:true,title:'La filial alemana',sub:'Vinculación y valores criterio',
+client:{id:'c03',n:'Ing. Klaus Werner',r:'Gerente de Maquinaria Werner Argentina',c:'#14263d',i:'K'},
+intro:'Werner Argentina compra todo a su casa matriz en Alemania. La aduana le mandó una nota: <i>"Existe vinculación entre las partes."</i> Klaus está nervioso: <i>"¿Nos van a tirar el precio abajo?"</i> Marta: <b>"Tranquilo. Que haya vinculación no es una condena. Luca, mostrale por qué."</b>',
+objs:['Cuándo hay vinculación (incluido el >5% del art. 15.4)','Por qué la vinculación sola no descarta el art. 1','Examen de las circunstancias de la venta: 3 criterios','Valores criterio: cuáles son y quién los invoca','Por qué el valor criterio NO es un método'],
+steps:[
+{t:'brief',title:'El mito que hay que romper',html:'Imaginá dos hermanos: uno vende, el otro compra. Que sean hermanos no significa que el precio esté "arreglado". La aduana no presume mala fe por el parentesco: investiga si ese vínculo <b>torció el precio</b>. La vinculación es una <b>señal de alerta, no una condena</b>.',
+ key:'La vinculación no invalida el valor de transacción. Solo lo hace cuando <b>influyó en el precio</b>. Se prueba por dos vías: <b>examen de las circunstancias de la venta</b> o <b>valores criterio</b>.',
+ trap:'El error número uno de la materia: "hay vinculación → no se usa el art. 1". Falso.'},
+{t:'brief',title:'¿Cuándo hay vinculación?',html:'El Acuerdo (art. 15) enumera los supuestos. Se consideran vinculadas, entre otros casos, cuando:',
+ bullets:['Una <b>controla</b> a la otra, directa o indirectamente.','Son <b>socios</b> en negocios.','Tienen relación <b>empleador–empleado</b>.','Una posee o controla un porcentaje de las acciones de la otra: según el <b>art. 15.4</b>, la vinculación relevante es la <b>superior al 5%</b> de las acciones o votos.','Ambas están <b>controladas por una tercera</b>, o controlan juntas a una tercera.','Son de la <b>misma familia</b>.']},
+{t:'classify',q:'¿Hay vinculación en estos casos?',buckets:[{id:'si',label:'🔗 Vinculadas',cls:'b-pur'},{id:'no',label:'↔ No vinculadas',cls:'b-con'}],items:[
+ {x:'La matriz alemana controla a la filial argentina',b:'si',why:'Control directo: supuesto típico de vinculación.'},
+ {x:'Son socios en otro negocio',b:'si',why:'Socios en negocios = vinculación.'},
+ {x:'El vendedor es empleado del comprador',b:'si',why:'Relación empleador–empleado = vinculación.'},
+ {x:'El vendedor tiene el 12% de los votos del comprador',b:'si',why:'Supera el 5% de acciones o votos (art. 15.4).'},
+ {x:'Ambas empresas son controladas por un mismo holding',b:'si',why:'Control común por una tercera = vinculación.'},
+ {x:'El vendedor es el cuñado del importador',b:'si',why:'Misma familia = vinculación.'},
+ {x:'El vendedor tiene el 3% de las acciones del comprador',b:'no',why:'La vinculación relevante por participación es la superior al 5% (art. 15.4).'},
+ {x:'Le compra hace 10 años y es su mejor cliente',b:'no',why:'Ser cliente frecuente no es vinculación.'},
+ {x:'Usan el mismo despachante de aduana',b:'no',why:'Compartir despachante no crea vinculación.'}]},
+{t:'choice',who:'c03',q:'"Bueno, estamos vinculados. ¿Qué corresponde primero?"',opts:[
+ {x:'Examinar si la vinculación influyó en el precio',ok:true,why:'Exacto. Antes de descartar nada, hay que ver si el vínculo distorsionó el precio.'},
+ {x:'Descartar el art. 1 por la vinculación',why:'No. La vinculación sola no descarta el art. 1.'},
+ {x:'Aplicar directamente el método deductivo',why:'No. Ni siquiera se descartó el art. 1, y si se descartara se bajaría en cascada empezando por idénticas.'}]},
+{t:'brief',title:'Primer camino: el examen de las circunstancias de la venta',html:'Lo hace la <b>aduana</b>: analiza cómo se fijó el precio, para ver si se comportó como entre partes independientes. La vinculación <b>no influyó</b> si el precio se ajustó de manera compatible con:',
+ bullets:['Las <b>prácticas normales</b> de fijación de precios en la rama de producción; o','El modo en que el vendedor fija precios para <b>compradores no vinculados</b>; o','Que el precio <b>cubre todos los costos y asegura un beneficio</b> representativo de las ganancias globales de la empresa en un período.'],
+ trap:'El examen no busca "el precio de mercado ideal": busca si el precio se fijó con criterios comerciales normales. Un precio bajo puede ser válido si responde a la lógica comercial (volumen, política de precios). Precio bajo ≠ precio influido.'},
+{t:'choice',who:'aduana',q:'La aduana comprueba que la matriz le cobra a Werner el mismo margen que a distribuidores independientes de otros países. ¿Conclusión?',opts:[
+ {x:'La vinculación no influyó en el precio: se acepta el art. 1',ok:true,why:'Es el criterio de "como fija precios a no vinculados". El precio pasa el examen.'},
+ {x:'Igual se rechaza por estar vinculadas',why:'No. Probado que no influyó, el valor de transacción se acepta.'},
+ {x:'Hay que aplicar valores criterio obligatoriamente',why:'No hace falta: el examen de la venta ya mostró que no influyó.'}]},
+{t:'choice',who:'aduana',q:'Otro caso: el precio intragrupo es bajo porque la filial compra volúmenes enormes, igual que la política de la empresa con todos. ¿Qué hacés?',opts:[
+ {x:'Puede ser válido: responde a la lógica comercial de la empresa',ok:true,why:'Bien. El examen busca criterios comerciales normales, no el precio más alto.'},
+ {x:'Rechazarlo porque es bajo',why:'Esa es la trampa: precio bajo no es lo mismo que precio influido por la vinculación.'}]},
+{t:'brief',title:'Segundo camino: los valores criterio',html:'Este camino lo usa el <b>importador</b> para demostrar que su valor es aceptable pese a la vinculación: si mi precio se parece mucho a un valor que la aduana ya aceptó, la vinculación no lo distorsionó.',
+ bullets:['<b>Valor criterio</b> = un valor ya aceptado por la aduana como valor en aduana, en el <b>mismo momento o uno aproximado</b>, que sirve de vara de comparación.','Son valores criterio: el <b>V.T. de idénticas</b> y el <b>V.T. de similares</b> vendidas a compradores <b>no vinculados</b> del mismo país de importación.','También: el valor por <b>método deductivo</b> (art. 5) y por <b>método reconstruido</b> (art. 6) de idénticas o similares.','La comparación debe tener en cuenta diferencias de <b>nivel comercial, cantidad</b> y los <b>ajustes del art. 8</b>.'],
+ key:'Examen de la venta → lo hace la <b>aduana</b> de oficio. Valores criterio → los invoca el <b>importador</b>. Dos herramientas, dos titulares.',
+ trap:'Los valores criterio son solo para comparar. No son un método de valoración ni sustituyen el valor de transacción: no se "valora por valor criterio", se compara contra él.'},
+{t:'classify',q:'¿Quién usa cada herramienta?',buckets:[{id:'ad',label:'🏛 La aduana',cls:'b-con'},{id:'imp',label:'🧑‍💼 El importador',cls:'b-gold'}],items:[
+ {x:'Examen de las circunstancias de la venta',b:'ad',why:'El examen de la venta lo hace la aduana de oficio.'},
+ {x:'Valores criterio',b:'imp',why:'Los valores criterio los invoca el importador para probar que su valor es aceptable.'},
+ {x:'Analizar si el precio cubre costos + beneficio representativo',b:'ad',why:'Es uno de los criterios del examen de la venta (aduana).'},
+ {x:'Mostrar que su precio se aproxima a un V.T. de idénticas a no vinculados',b:'imp',why:'Eso es invocar un valor criterio: lo hace el importador.'}]},
+{t:'classify',q:'Klaus junta antecedentes. ¿Cuáles sirven como valor criterio?',buckets:[{id:'si',label:'✔ Es valor criterio',cls:'b-ok'},{id:'no',label:'✘ No sirve',cls:'b-err'}],items:[
+ {x:'V.T. de máquinas idénticas vendidas a compradores no vinculados',b:'si',why:'Es el primer valor criterio de la lista.'},
+ {x:'V.T. de máquinas similares vendidas a no vinculados',b:'si',why:'También es valor criterio.'},
+ {x:'Valor por método deductivo de idénticas o similares',b:'si',why:'El valor deductivo (art. 5) de idénticas/similares es valor criterio.'},
+ {x:'Valor por método reconstruido de idénticas o similares',b:'si',why:'El valor reconstruido (art. 6) de idénticas/similares es valor criterio.'},
+ {x:'Precio de venta a otra filial del mismo grupo',b:'no',why:'Debe ser a compradores no vinculados; a otra filial no sirve como vara.'},
+ {x:'Un valor aceptado hace 6 años',b:'no',why:'Tiene que ser del mismo momento o uno aproximado.'}]},
+{t:'choice',q:'Un compañero escribe: "Se valoró la mercadería por el valor criterio". ¿Qué le corregís?',opts:[
+ {x:'Que el valor criterio no es un método: solo sirve para comparar y validar el V.T. declarado',ok:true,why:'Exacto. No se valora "por" valor criterio, se compara contra él.'},
+ {x:'Nada, está bien dicho',why:'Acá se desaprueba: el valor criterio no determina el valor en aduana, solo valida el precio en casos de vinculación.'},
+ {x:'Que debió decir "por el valor más alto"',why:'Tomar el valor más alto está prohibido. Y el valor criterio no es un método.'}]}
+],
+finals:[
+ {k:'Oral',q:'¿Qué es la vinculación y cómo se determina si influyó en el precio?',a:'Hay vinculación cuando comprador y vendedor están relacionados según los supuestos del Acuerdo (control, sociedad, empleo, participación superior al 5% del capital o votos —art. 15.4—, control común, familia). La vinculación no invalida el valor de transacción: hay que determinar si influyó en el precio, por dos vías: (a) examen de las circunstancias de la venta —la aduana verifica si el precio se fijó según prácticas normales del sector, como a no vinculados, o cubriendo costos más beneficio representativo—; y (b) valores criterio —el importador demuestra que su valor se aproxima a un valor ya aceptado por la aduana para idénticas/similares—.'},
+ {k:'Escrito',q:'Explique los valores criterio y aclare por qué no son un método de valoración.',a:'Son valores ya aceptados por la aduana como valor en aduana, en el mismo momento o uno aproximado: V.T. de idénticas o similares vendidas a no vinculados, o el valor por método deductivo o reconstruido de idénticas/similares. Sirven exclusivamente como comparación para probar que un precio entre vinculados es aceptable. No son un método porque no determinan el valor en aduana: solo validan el V.T. declarado; la comparación contempla diferencias de nivel comercial, cantidad y ajustes del art. 8.'}]
+});
+
+/* ===================== CASO 4 · TEMA 4 ===================== */
+LEVELS.push({id:'t04',tema:'04',crit:true,title:'La factura con sorpresas',sub:'Art. 8 — Ajustes al precio',
+client:{id:'c04',n:'Matías Romero',r:'Romero Autopartes · importa de Brasil y China',c:'#1f7a4d',i:'M'},
+intro:'Matías importa piezas plásticas. En su carpeta hay de todo: comisiones, un molde que mandó él, regalías, descuentos, fletes "por cuenta mía"... Marta: <b>"El 80% de los ejercicios del final se ganan o se pierden acá. Vamos ítem por ítem."</b>',
+objs:['Las 2 reglas de hierro del ajuste','Qué se suma por el art. 8.1 (y qué no)','Comisión de venta vs. de compra; cánones','Base CIF argentina y "lugar de importación"','Flete gratuito o por cuenta del comprador','Descuentos admisibles vs. no admisibles'],
+steps:[
+{t:'brief',title:'La lógica del ajuste',html:'El art. 8 es la receta para convertir el precio de factura en el valor en aduana. La factura casi nunca viene "lista para tributar": le faltan cosas (flete, comisiones, prestaciones) y a veces le sobran (gastos posteriores a la importación, ciertos descuentos).',
+ bullets:['Regla de hierro 1: <b>solo se ajusta lo que no está ya incluido</b> en el precio.','Regla de hierro 2: todo ajuste debe basarse en <b>datos objetivos y cuantificables</b>. Si no se puede cuantificar, no se ajusta (y puede caer el art. 1).'],
+ key:'Precio realmente pagado ± ajustes del art. 8 = valor en aduana.'},
+{t:'brief',title:'Lo que se SUMA (art. 8.1), si no está incluido',html:'La lista que tenés que recitar:',
+ bullets:['<b>Comisiones de venta y corretaje</b>. Excepción: las <b>comisiones de compra NO</b> se suman.','<b>Envases y embalajes</b> que se traten como un todo con la mercadería, incluidos materiales y mano de obra del embalaje.','<b>Prestaciones</b>: bienes o servicios que el comprador da gratis o barato para producir la mercadería — materiales y componentes; herramientas, matrices, moldes; materiales consumidos; ingeniería, diseño y planos hechos <b>fuera del país de importación</b>.','<b>Cánones y derechos de licencia</b> relacionados con la mercadería, que el comprador deba pagar <b>como condición de venta</b>.','<b>Producto de la reventa</b> que revierta al vendedor.','<b>Transporte, carga/descarga y seguro</b> hasta el lugar de importación (Argentina: CIF).']},
+{t:'classify',q:'Revisá la carpeta de Matías: ¿se suma al precio o no?',buckets:[{id:'s',label:'➕ Se suma',cls:'b-ok'},{id:'n',label:'⛔ No se suma',cls:'b-err'}],items:[
+ {x:'Comisión al agente que representa al vendedor',b:'s',why:'Comisión de venta: se suma.'},
+ {x:'Comisión al agente que representa a Matías (comprador)',b:'n',why:'Comisión de compra: es gasto del comprador por representarlo. No se suma.'},
+ {x:'Corretaje',b:'s',why:'El corretaje se suma junto con las comisiones de venta.'},
+ {x:'Envase que se trata como un todo con la pieza',b:'s',why:'Envases y embalajes se suman.'},
+ {x:'Mano de obra del embalaje',b:'s',why:'Materiales y mano de obra del embalaje también se suman.'},
+ {x:'Molde que Matías mandó gratis al fabricante',b:'s',why:'Prestación (herramientas, matrices, moldes): se suma.'},
+ {x:'Diseño hecho en Brasil, aportado por Matías',b:'s',why:'Ingeniería y diseño hechos fuera del país de importación: prestación que se suma.'},
+ {x:'Regalía por la marca, condición de venta',b:'s',why:'Canon relacionado con la mercadería y condición de venta: se suma.'},
+ {x:'Canon por el derecho de reproducir la pieza en Argentina',b:'n',why:'Un canon por el derecho de reproducción en el país de importación NO se suma.'},
+ {x:'10% de la reventa que vuelve al vendedor',b:'s',why:'Producto de la reventa que revierte al vendedor: se suma.'}]},
+{t:'choice',who:'c04',q:'"En la factura dice: comisión 5% pagada al agente. ¿La sumo?"',opts:[
+ {x:'Depende de a quién representa el agente: si es del vendedor, se suma; si es del comprador, no',ok:true,why:'Esa es la trampa clásica: ponen "comisión al agente" sin aclarar, para ver si distinguís de qué lado está.'},
+ {x:'Sí, toda comisión se suma',why:'No. Solo las de venta (y el corretaje). La de compra no.'},
+ {x:'No, las comisiones nunca integran el valor',why:'Las de venta sí integran el valor (art. 8).'}]},
+{t:'choice',who:'c04',q:'"Pago una regalía al licenciante de la marca. ¿Siempre se suma?"',opts:[
+ {x:'Solo si está relacionada con la mercadería Y es condición de venta (y no está ya en el precio)',ok:true,why:'Exacto. Y un canon por el derecho de reproducción en el país de importación no se suma.'},
+ {x:'Siempre, porque es un pago del comprador',why:'No. Hay que leer qué tipo de canon es: relacionado con la mercadería y condición de venta.'},
+ {x:'Nunca: es un gasto del comprador',why:'Los cánones relacionados con la mercadería y que son condición de venta sí se suman.'}]},
+{t:'brief',title:'Transporte y seguro: la base CIF argentina',html:'El <b>art. 8.2</b> deja a cada país decidir si incluye o no flete, gastos conexos y seguro. Argentina, por el <b>Dec. 1026/87</b>, los incluye en su totalidad: valora sobre <b>base CIF</b>.',
+ bullets:['Se incluyen <b>hasta el puerto o lugar de importación</b>: transporte, carga, descarga y manipulación de ese transporte, y seguro.','El seguro no tiene límite en el Acuerdo; se acota con la Nota Interpretativa al art. 1: los <b>gastos posteriores a la importación no integran el valor</b>.','<b>Lugar de importación</b> (Dec. 1026/87): por vía acuática, el <b>primer puerto</b> donde la carga se somete a formalidades aduaneras; por vía terrestre o aérea, la <b>primera oficina aduanera más próxima a la frontera</b> donde puedan descargarse. Rige aunque la mercadería siga a otra aduana.','Valoran FOB: <b>EE.UU., Canadá, Australia y Nueva Zelanda</b>. Valoran CIF: <b>Mercosur, UE y sudamericanos</b>.'],
+ trap:'Flete gratuito o "por cuenta del comprador": igual se incluye, calculado con las tarifas y primas normalmente aplicables. No declarar flete "porque no lo pagué" es un error.'},
+{t:'classify',q:'¿Qué base usa cada uno?',buckets:[{id:'fob',label:'🚢 Base FOB',cls:'b-gold'},{id:'cif',label:'📦 Base CIF',cls:'b-con'}],items:[
+ {x:'Estados Unidos',b:'fob',why:'EE.UU. valora FOB.'},{x:'Canadá',b:'fob',why:'Canadá valora FOB.'},{x:'Australia',b:'fob',why:'Australia valora FOB.'},{x:'Nueva Zelanda',b:'fob',why:'Nueva Zelanda valora FOB.'},
+ {x:'Argentina',b:'cif',why:'Argentina valora CIF por el Dec. 1026/87.'},{x:'Mercosur',b:'cif',why:'El Mercosur valora CIF.'},{x:'Unión Europea',b:'cif',why:'La UE valora CIF.'}]},
+{t:'choice',who:'c04',q:'"Las piezas vienen en barco: entran por Buenos Aires y siguen a la aduana de Rosario. ¿Hasta dónde sumo el flete?"',opts:[
+ {x:'Hasta el primer puerto donde la carga se somete a formalidades aduaneras (Buenos Aires)',ok:true,why:'Es la definición del Dec. 1026/87 para vía acuática. Rige aunque siga a otra aduana para el despacho.'},
+ {x:'Hasta Rosario, donde se despacha',why:'No. El lugar de importación es el primer puerto con formalidades aduaneras, aunque la mercadería siga.'},
+ {x:'Hasta el depósito de Matías',why:'El transporte interno después de la importación no integra el valor.'}]},
+{t:'choice',who:'c04',q:'"El flete de China lo contraté yo y me lo regalaron por ser cliente. ¿Lo declaro?"',opts:[
+ {x:'Sí: se incluye igual, con la tarifa normalmente aplicable',ok:true,why:'Transporte gratuito o por cuenta del comprador se valora igual, a tarifa normal.'},
+ {x:'No, porque no lo pagué',why:'Acá se desaprueba: el flete se incluye aunque no se haya pagado.'},
+ {x:'Solo si figura en la factura',why:'No depende de la factura: Argentina valora CIF y el flete va siempre.'}]},
+{t:'choice',q:'La compra vino en condición CIF y Argentina valora CIF. ¿Qué hacés con el flete?',opts:[
+ {x:'Nada: ya está incluido en el precio',ok:true,why:'Solo se ajusta lo que no está incluido. Si la venta es FOB, ahí sí hay que sumar flete y seguro para llegar al CIF.'},
+ {x:'Sumarlo de nuevo',why:'Se estaría duplicando. Solo se ajusta lo que no está ya incluido.'},
+ {x:'Restarlo',why:'Restar solo tendría sentido si el país valorara FOB. Argentina valora CIF.'}]},
+{t:'brief',title:'Los descuentos: admisibles y no admisibles',html:'Punto finísimo y muy preguntado. Los conceptos que no forman parte del valor en aduana, si están incluidos en el precio, se deducen. Pero con los descuentos hay que distinguir:',
+ bullets:['<b>Admisibles</b> (se aceptan y quedan deducidos): por <b>pago al contado</b>, por <b>cantidad</b> y por <b>nivel comercial</b>.','<b>No admisibles</b> (se ajustan EN POSITIVO, se suman de nuevo): por <b>pago anticipado</b>, <b>hasta agotar stock</b>, para <b>compensar envíos anteriores</b>, <b>adicionales/retroactivos</b>.','Los <b>intereses de financiación</b> no forman parte del valor en aduana (Decisión 3.1 y art. 7 del Dec. 1026/87), si están <b>discriminados</b>, responden a un acuerdo de financiación por escrito y la tasa no excede la del mercado.'],
+ trap:'El instinto dice "un descuento siempre baja el valor". No: si es no admisible, hay que sumarlo de vuelta. La consigna típica avisa: "los descuentos no admisibles deberán ajustarse en positivo". Leelo dos veces.'},
+{t:'classify',q:'Clasificá los descuentos de las facturas de Matías.',buckets:[{id:'ad',label:'✔ Admisible (queda deducido)',cls:'b-ok'},{id:'na',label:'➕ No admisible (se suma de nuevo)',cls:'b-err'}],items:[
+ {x:'Por pago al contado',b:'ad',why:'Descuento por contado: admisible.'},
+ {x:'Por cantidad',b:'ad',why:'Descuento por cantidad: admisible.'},
+ {x:'Por nivel comercial (mayorista)',b:'ad',why:'Descuento por nivel comercial: admisible.'},
+ {x:'Por pago anticipado',b:'na',why:'Pago anticipado: no admisible, se ajusta en positivo.'},
+ {x:'Hasta agotar stock',b:'na',why:'No admisible: se suma de nuevo.'},
+ {x:'Para compensar envíos anteriores',b:'na',why:'No responde a esta mercadería: no admisible.'},
+ {x:'Descuento adicional retroactivo',b:'na',why:'Adicionales/retroactivos: no admisibles.'}]},
+{t:'classify',q:'Y estos conceptos que vienen discriminados dentro del precio, ¿qué hacés?',buckets:[{id:'d',label:'➖ Se deduce (no integra)',cls:'b-gold'},{id:'s',label:'➕ Se suma',cls:'b-ok'}],items:[
+ {x:'Montaje de la máquina en la planta de Matías (post-importación)',b:'d',why:'Gastos posteriores a la importación no integran el valor: si están incluidos, se deducen.'},
+ {x:'Transporte dentro de Argentina',b:'d',why:'Transporte interno posterior a la importación: no integra.'},
+ {x:'Derechos e impuestos argentinos',b:'d',why:'Los tributos del país de importación no integran el valor.'},
+ {x:'Intereses de financiación',b:'d',why:'No forman parte del valor en aduana (Decisión 3.1, art. 7 Dec. 1026/87).'},
+ {x:'Descuento por pago anticipado ya restado',b:'s',why:'No admisible: se suma de nuevo.'}]},
+{t:'calc',who:'marta',q:'Liquidá el valor en aduana de esta factura de Matías. Recorré concepto por concepto.',doc:doc('Factura Romero Autopartes','venta FOB Shanghái',[['Precio FOB (ya neto de descuento por pago anticipado de 500)','USD 9.500'],['Comisión al agente de compras de Matías','USD 300'],['Molde enviado gratis por Matías al fabricante','USD 800'],['Flete internacional (por cuenta de Matías)','USD 600'],['Seguro internacional','USD 100']]),
+ fields:[
+  {label:'Precio + descuento no admisible',unit:'USD',ans:10000,tol:0.5,hint:'El descuento por pago anticipado es no admisible: ¿qué se hace con él?',how:'9.500 + 500 (descuento no admisible, se suma de nuevo) = 10.000'},
+  {label:'Más los ajustes del art. 8 que correspondan (sin flete ni seguro)',unit:'USD',ans:10800,tol:0.5,hint:'¿La comisión de compra se suma? ¿Y el molde?',how:'10.000 + 800 (molde = prestación). La comisión de compra NO se suma → 10.800'},
+  {label:'Valor en aduana (CIF)',unit:'USD',ans:11500,tol:0.5,hint:'Falta llevarlo a CIF: el flete se incluye aunque sea por cuenta del comprador.',how:'10.800 + 600 flete + 100 seguro = 11.500'}],
+ note:'Números ilustrativos para practicar el razonamiento.',done:'Regla mental: recorré la factura y preguntá "¿esto forma parte del valor en aduana?". Gasto post-importación incluido → deducir. Descuento no admisible → sumar. Ajuste del art. 8 no incluido → sumar.'}
+],
+finals:[
+ {k:'Escrito',q:'Enumere los ajustes del art. 8 y explique la regla de los datos objetivos y cuantificables.',a:'Se añaden al precio, si no están incluidos: comisiones de venta y corretaje (no las de compra); envases y embalajes; prestaciones (bienes/servicios del comprador para producir la mercadería, incluida ingeniería hecha fuera del país); cánones y derechos de licencia relacionados con la mercadería y como condición de venta; producto de la reventa que revierta al vendedor; y transporte, carga/descarga y seguro hasta el lugar de importación (base CIF). Todo ajuste debe apoyarse en datos objetivos y cuantificables: si el importe no puede determinarse objetivamente, no puede ajustarse, y podría impedir usar el valor de transacción.'},
+ {k:'Oral',q:'¿Cómo se tratan los descuentos al determinar el valor en aduana?',a:'Los admisibles (contado, cantidad, nivel comercial) se aceptan y quedan deducidos. Los no admisibles —pago anticipado, hasta agotar stock, compensar envíos anteriores, adicionales— se ajustan en positivo: se suman nuevamente al precio. Esos descuentos no responden a la mercadería valuada sino a circunstancias ajenas que distorsionarían la base imponible. Los intereses de financiación no integran el valor (Decisión 3.1, art. 7 Dec. 1026/87).'},
+ {k:'Trampa',q:'La factura dice "comisión 5%". ¿Se suma?',a:'Depende: si es de venta (el agente actúa por el vendedor) se suma; si es de compra (representa al comprador) no se suma.'}]
+});
+
+/* ===================== CASO 5 · TEMA 5 ===================== */
+LEVELS.push({id:'t05',tema:'05',title:'¿Idénticas o parecidas?',sub:'Arts. 2 y 3 — Mercaderías idénticas y similares',
+client:{id:'c05',n:'Valentina Paz',r:'Pantallas del Litoral · importa monitores',c:'#22548c',i:'V'},
+intro:'A Valentina le rechazaron el valor de transacción porque no pudo aclarar la vinculación con su proveedor. <i>"¿Y ahora qué? ¿Me inventan un precio?"</i> Marta: <b>"No se inventa nada. Se busca el valor ya aceptado de otra operación igual o parecida."</b>',
+objs:['Diferenciar idénticas (art. 2) de similares (art. 3)','Condiciones comunes: mismo país de importación y mismo momento','Excepción por prestaciones y productor distinto','Ajustes por nivel comercial, cantidad y tiempo','Más de un valor aplicable → el más bajo','Resolver el ejercicio de la cátedra (art. 3)'],
+steps:[
+{t:'brief',title:'Cuando no hay art. 1',html:'Es como tasar un auto sin su precio: buscás el precio real de uno <b>idéntico</b> (misma marca, modelo, año, fábrica). Si no lo encontrás, uno <b>similar</b> (hace lo mismo y es intercambiable). Y ajustás por diferencias: no es lo mismo comprar 1 que 100, ni hoy que hace un año.',
+ key:'Método 2 (art. 2): V.T. de mercaderías <b>idénticas</b>. Método 3 (art. 3): V.T. de mercaderías <b>similares</b>. En ese orden: primero idénticas, y solo si no hay, similares.'},
+{t:'brief',title:'Las dos definiciones',html:'Lado a lado:',
+ bullets:['<b>Idénticas</b>: iguales en todo — características físicas, calidad y prestigio comercial. Pequeñas diferencias de aspecto no impiden considerarlas idénticas.','<b>Similares</b>: muy semejantes en composición y características; cumplen las mismas funciones y son comercialmente intercambiables.','Ambas: <b>mismo país de producción</b> y <b>mismo productor</b>. Si no hay del mismo productor, pueden tomarse las de <b>otro productor del mismo país</b>.','Condiciones comunes: vendidas al <b>mismo país de importación</b> y exportadas en el <b>mismo momento o uno aproximado</b>.','Excepción por prestaciones: se excluyen las mercaderías que incorporan ingeniería o trabajos artísticos del comprador, <b>hechos en el país de importación</b>, que no fueron ajustados por el art. 8.']},
+{t:'classify',q:'¿Este rasgo define a las idénticas o a las similares?',buckets:[{id:'id',label:'🟰 Idénticas (art. 2)',cls:'b-con'},{id:'si',label:'≈ Similares (art. 3)',cls:'b-pur'},{id:'am',label:'🤝 Ambas',cls:'b-gold'}],items:[
+ {x:'Iguales en características físicas, calidad y prestigio',b:'id',why:'Igualdad total = idénticas.'},
+ {x:'Pequeñas diferencias de aspecto no las descartan',b:'id',why:'Es una aclaración propia de las idénticas.'},
+ {x:'Muy semejantes en composición y características',b:'si',why:'Semejanza (no igualdad) = similares.'},
+ {x:'Cumplen las mismas funciones y son comercialmente intercambiables',b:'si',why:'Es el corazón de la definición de similares.'},
+ {x:'Mismo país de producción',b:'am',why:'Lo exigen las dos.'},
+ {x:'Vendidas al mismo país de importación, en el mismo momento o aproximado',b:'am',why:'Condición común a ambos métodos.'}]},
+{t:'choice',who:'c05',q:'"Encontré monitores idénticos, pero de otra fábrica del mismo país. ¿Sirven?"',opts:[
+ {x:'Sí: si no hay del mismo productor, pueden tomarse los de otro productor del mismo país',ok:true,why:'Es la excepción sobre el productor.'},
+ {x:'No, tienen que ser siempre del mismo productor',why:'Hay excepción: si no existen del mismo productor, se toman las de una persona diferente en el mismo país.'},
+ {x:'Sí, y también de cualquier otro país',why:'No: tiene que ser el mismo país de producción (la flexibilidad de origen es recién en el art. 7).'}]},
+{t:'choice',q:'Los monitores de comparación traen un diseño que hizo el propio comprador en Argentina, que nunca se ajustó por art. 8. ¿Sirven?',opts:[
+ {x:'No: se excluyen las mercaderías con ingeniería del comprador hecha en el país de importación no ajustada',ok:true,why:'Es la excepción por prestaciones de los arts. 2 y 3.'},
+ {x:'Sí, el diseño no cambia nada',why:'Sí cambia: esa prestación no ajustada distorsiona la comparación, por eso se excluyen.'}]},
+{t:'brief',title:'Nivel comercial, cantidad y tiempo',html:'Casi nunca la operación de comparación tiene exactamente las mismas condiciones. Por eso se ajusta:',
+ bullets:['<b>Nivel comercial</b>: no es lo mismo un precio a mayorista que a minorista. Se llevan al mismo nivel.','<b>Cantidad</b>: el precio unitario cambia con el volumen. Se ajusta la diferencia.','<b>Elemento tiempo</b>: mismo momento o uno aproximado. Diferencias de fecha relevantes descartan la comparación.'],
+ trap:'Regla que cae seguro: si hay más de un valor de transacción de idénticas (o similares) aplicable, se toma el <b>MÁS BAJO</b>.'},
+{t:'choice',who:'c05',q:'Hay dos operaciones de monitores idénticos: USD 90/u (1.000 u a mayorista) y USD 100/u (200 u a minorista). Ajustadas por cantidad y nivel comercial, las dos siguen válidas. ¿Cuál se toma?',opts:[
+ {x:'La más baja',ok:true,why:'Regla explícita del Acuerdo: ante más de un valor aplicable, el más bajo.'},
+ {x:'El promedio',why:'El Acuerdo no promedia: toma el más bajo.'},
+ {x:'La más alta, para cuidar la recaudación',why:'Tomar el valor más alto está expresamente prohibido. Va el más bajo.'},
+ {x:'La más reciente',why:'La fecha importa para validar (elemento tiempo), pero entre las válidas va la más baja.'}]},
+{t:'brief',title:'El ejercicio de la cátedra (art. 3)',html:'Mercadería X, CIP U$S 60.000, 8.000 unidades (precio unitario 7,5), <b>con vinculación</b>, DI 20%, importación <b>20/08/2024 (±90 días)</b>, origen Italia. Operaciones comparables:<div class="tscroll"><table class="tbl"><tr><th>#</th><th>Fecha</th><th class="r">Cant.</th><th>Origen</th><th class="r">VT</th><th>Comprador</th></tr><tr><td>1</td><td>19/07/24</td><td class="r">400</td><td>Italia</td><td class="r">21</td><td>L</td></tr><tr><td>2</td><td>28/08/24</td><td class="r">500</td><td>Canadá</td><td class="r">20</td><td>XL</td></tr><tr><td>3</td><td>20/11/24</td><td class="r">700</td><td>Italia</td><td class="r">18</td><td>S</td></tr><tr><td>4</td><td>19/10/24</td><td class="r">900</td><td>Canadá</td><td class="r">20</td><td>XL</td></tr><tr><td>5</td><td>29/09/24</td><td class="r">600</td><td>Canadá</td><td class="r">19</td><td>T</td></tr><tr><td>6</td><td>12/09/24</td><td class="r">1000</td><td>Canadá</td><td class="r">22</td><td>U</td></tr></table></div>Lo que se evalúa es el <b>razonamiento</b>: por qué se descarta cada operación y con qué criterio se elige.'},
+{t:'choice',q:'Paso 1: ¿se puede usar el precio de la propia operación (7,5)?',opts:[
+ {x:'No: hay vinculación con el vendedor, se rechaza el art. 1 y se busca valor de idénticas/similares',ok:true,why:'Así lo resuelve la cátedra.'},
+ {x:'Sí, el CIP es el valor de transacción',why:'El enunciado marca vinculación: se rechaza el art. 1 y se busca un comparable.'}]},
+{t:'spot',q:'Paso 2: tocá la operación que queda afuera por la fecha (±90 días desde el 20/08/2024).',title:'Operaciones comparables',rows:[
+ {x:'1 · 19/07/24 · 400 u · Italia · L',v:'VT 21',why:'19/07 está dentro de los 90 días previos.'},
+ {x:'2 · 28/08/24 · 500 u · Canadá · XL',v:'VT 20',why:'28/08 está dentro del rango.'},
+ {x:'3 · 20/11/24 · 700 u · Italia · S',v:'VT 18',bad:true,why:'El 20/11/2024 supera los 90 días desde el 20/08/2024: queda descartada por el elemento tiempo, aunque sea la más barata.'},
+ {x:'4 · 19/10/24 · 900 u · Canadá · XL',v:'VT 20',why:'19/10 está dentro del rango.'},
+ {x:'5 · 29/09/24 · 600 u · Canadá · T',v:'VT 19',why:'29/09 está dentro del rango.'},
+ {x:'6 · 12/09/24 · 1000 u · Canadá · U',v:'VT 22',why:'12/09 está dentro del rango.'}]},
+{t:'choice',q:'Paso 3: ¿con qué criterio elige la cátedra entre las válidas?',opts:[
+ {x:'La mayor cantidad vendida a un mismo precio a un comprador',ok:true,why:'Es el criterio que aplica la cátedra en este ejercicio del art. 3 cuando hay varias comparables.'},
+ {x:'La operación más reciente',why:'No es el criterio de la cátedra para este ejercicio.'},
+ {x:'El promedio de todas',why:'No se promedia.'}]},
+{t:'calc',q:'Paso 4: ¿qué VT se toma?',fields:[{label:'VT elegido por unidad',unit:'U$S',ans:20,tol:0.01,hint:'Buscá el precio que se repite en la mayor cantidad vendida a un mismo comprador.',how:'U$S 20: el comprador XL compró 500 + 900 = 1.400 unidades a ese precio (operaciones 2 y 4)'}],
+ done:'<b>OJO, punto sutil:</b> en este ejercicio la cátedra elige por mayor cantidad a un mismo precio y comprador (20), no la más baja (19). Si te lo toman, justificá con ese criterio. '+VER},
+{t:'choice',q:'Último control: ¿por qué hay que ajustar antes de comparar?',opts:[
+ {x:'Por diferencias de nivel comercial, cantidad y elemento tiempo',ok:true,why:'Son los tres ajustes de comparación de los arts. 2 y 3.'},
+ {x:'Por diferencias de Incoterm solamente',why:'Los ajustes de comparación son nivel comercial, cantidad y tiempo.'},
+ {x:'No hace falta ajustar',why:'Casi nunca las condiciones coinciden: hay que llevarlas a condiciones comparables.'}]}
+],
+finals:[
+ {k:'Oral',q:'Diferencie mercaderías idénticas de similares y explique los ajustes de comparación.',a:'Idénticas (art. 2): iguales en todos los aspectos —características físicas, calidad, prestigio—, del mismo país y productor; las pequeñas diferencias de aspecto no obstan. Similares (art. 3): muy semejantes en composición y características, que cumplen las mismas funciones y son comercialmente intercambiables, del mismo país y productor. Ambas deben haberse vendido al mismo país de importación y exportado en el mismo momento o uno aproximado. Se ajusta por nivel comercial, cantidad y elemento tiempo. Si hay más de un valor aplicable, se toma el más bajo.'},
+ {k:'Escrito',q:'Resuelva: importación con vinculación, seis operaciones comparables. ¿Qué VT toma?',a:'Se rechaza el art. 1 por vinculación. Se descarta la operación 3 (20/11/2024 supera los 90 días desde el 20/08/2024). Entre las válidas se toma la mayor cantidad vendida a un mismo precio a un comprador: VT = U$S 20 (operaciones 2 y 4, comprador XL).'}]
+});
+
+/* ===================== CASO 6 · TEMA 6 ===================== */
+LEVELS.push({id:'t06',tema:'06',title:'El precio de góndola',sub:'Art. 5 — Método deductivo (y súper deductivo)',
+client:{id:'c06',n:'Hernán Quiroga',r:'Distribuidora Quiroga · reventa en el país',c:'#b5451d',i:'H'},
+intro:'No hay idénticas ni similares para la mercadería de Hernán. Pero él la revende en Argentina a muchos clientes. Marta: <b>"Entonces valuamos hacia atrás: desde el precio de reventa vamos pelando capas."</b>',
+objs:['La lógica del deductivo: valorar hacia atrás','Qué precio de reventa se toma','Las 3 deducciones','El orden: propia → idénticas → similares → súper deductivo','El coeficiente 100/(100+DI) y el ejercicio de la cátedra','Súper deductivo, plazo de 90 días y quién puede pedirlo'],
+steps:[
+{t:'brief',title:'Valorar hacia atrás',html:'Los métodos 1 a 3 miran el precio de <b>entrada</b>. El deductivo mira el precio de <b>salida</b>: cuánto se revende en el país de importación. Es ingeniería inversa: del precio de góndola vas pelando capas agregadas después de importar (ganancia, gastos, flete interno, impuestos locales) hasta quedarte con el valor al entrar.',
+ key:'Base: el <b>precio unitario al que se venda la mayor cantidad total</b> de las mercaderías importadas (o idénticas/similares), en el <b>mismo estado</b> en que se importaron, a personas <b>no vinculadas</b> del país de importación, en el mismo momento o uno aproximado, <b>menos las deducciones</b>.'},
+{t:'choice',who:'c06',q:'"Le vendo una parte a mi hermano a precio especial y el grueso a clientes comunes. ¿Qué precio usamos?"',opts:[
+ {x:'El de la mayor cantidad total vendida a no vinculados, en el mismo estado',ok:true,why:'Exacto: no vinculados, mismo estado, mayor cantidad total.'},
+ {x:'El precio a tu hermano',why:'Tiene que ser una venta a personas no vinculadas.'},
+ {x:'El precio más alto de lista',why:'No: se toma el precio unitario de la mayor cantidad total.'}]},
+{t:'brief',title:'Qué se deduce',html:'Las deducciones son "elementos de valor del mercado interno que nada tienen que ver con el precio de exportación":',
+ bullets:['<b>Comisiones</b> pagadas o convenidas, o <b>beneficios y gastos generales</b> del revendedor.','<b>Transporte y seguro dentro</b> del país de importación.','<b>Derechos, impuestos y tributos</b> pagados en el país de importación.']},
+{t:'classify',q:'Del precio de reventa de Hernán, ¿qué se deduce?',buckets:[{id:'d',label:'➖ Se deduce',cls:'b-gold'},{id:'q',label:'✋ Se queda (es valor de la mercadería)',cls:'b-con'}],items:[
+ {x:'Ganancia de Hernán',b:'d',why:'Beneficio del revendedor local: se deduce.'},
+ {x:'Gastos generales de la distribuidora',b:'d',why:'Gastos generales: se deducen.'},
+ {x:'Comisión a sus vendedores',b:'d',why:'Comisiones: se deducen.'},
+ {x:'Flete del depósito al cliente',b:'d',why:'Transporte interno: se deduce.'},
+ {x:'Seguro del camión en Argentina',b:'d',why:'Seguro interno: se deduce.'},
+ {x:'Derecho de importación pagado',b:'d',why:'Tributos del país de importación: se deducen.'},
+ {x:'El valor de la propia mercadería importada',b:'q',why:'Eso es justamente lo que queremos encontrar: no se deduce.'}]},
+{t:'order',q:'Ordená cómo se aplica el método deductivo.',items:[
+ {x:'Precio de la primera venta en el país de la propia mercadería importada',why:'Se arranca por la mercadería misma.'},
+ {x:'Si no, de mercaderías idénticas',why:'Después, idénticas.'},
+ {x:'Si no, de mercaderías similares',why:'Después, similares.'},
+ {x:'Si nada es factible: súper deductivo (mercadería transformada)',why:'Último paso dentro del método.'}]},
+{t:'brief',title:'El coeficiente de variación',html:'En el ejercicio de la cátedra aparece el coeficiente <b>100 / (100 + DI)</b> para despejar el derecho de importación que está "adentro" del precio de reventa.',
+ trap:'No confundas el coeficiente con las deducciones: las deducciones son restas directas; el coeficiente se aplica después, sobre la base, para sacar el DI incluido.'},
+{t:'calc',who:'marta',q:'El ejercicio resuelto de la cátedra. Resolvelo vos.',doc:doc('Reventa en el país','DDP',[['Precio de reventa DDP','U$S 160.000'],['Flete interno','U$S 3.000'],['Almacenamiento','U$S 1.000'],['Gastos generales + utilidades (20%)','U$S 32.000'],['Derecho de importación','20%']]),
+ fields:[
+  {label:'Base imponible (DDP − deducciones)',unit:'U$S',ans:124000,tol:0.5,hint:'Restá las tres deducciones al DDP.',how:'160.000 − 3.000 − 1.000 − 32.000 = 124.000'},
+  {label:'Coeficiente de variación 100/(100+DI)',ans:0.83333,tol:0.0001,dec:5,hint:'100 dividido (100 + 20).',how:'100 / 120 = 0,83333'},
+  {label:'Valor en Aduana (base × coeficiente)',unit:'U$S',ans:103332.92,tol:3,dec:2,hint:'Multiplicá la base por el coeficiente.',how:'124.000 × 0,83333 = 103.332,92'}],
+ note:'El coeficiente se usa a 5 decimales; pequeñas diferencias por redondeo son normales.'},
+{t:'brief',title:'Súper deductivo',html:'Se aplica cuando las mercaderías <b>no se venden en el mismo estado</b>, sino que se <b>transformaron</b> después de importadas. Se parte del precio del producto transformado a no vinculados y se deduce, además de lo habitual, el <b>valor añadido por la transformación</b>.',
+ bullets:['Las deducciones por valor añadido deben basarse en <b>datos objetivos y cuantificables</b> referidos al costo de la transformación.','Ejemplo: se importa tela y se confeccionan camisas que se venden a USD 30. Se parte de los 30, se deducen ganancia, gastos, tributos internos <b>y</b> el valor de la confección. Lo que queda se aproxima al valor de la tela.','Dato de examen: el deductivo maneja un <b>plazo de 90 días</b> para la venta de referencia.','En Argentina, la aduana puede optar por el deductivo <b>a pedido del importador o por propia decisión</b>.']},
+{t:'choice',who:'c06',q:'"Importo tela y en el taller la convierto en camisas. Solo vendo camisas. ¿Se puede usar el deductivo?"',opts:[
+ {x:'Sí, el súper deductivo: se parte del precio de las camisas y se deduce también el valor añadido por la confección',ok:true,why:'Es exactamente el caso del súper deductivo.'},
+ {x:'No, hay que descartar el art. 5',why:'Para la mercadería transformada existe la variante súper deductiva.'},
+ {x:'Sí, el deductivo común sin deducir la confección',why:'Faltaría deducir el valor añadido: estarías valuando mano de obra local como si fuera tela.'}]},
+{t:'choice',q:'¿Qué dato de plazo asociás al método deductivo?',opts:[
+ {x:'90 días',ok:true,why:'"El plazo de los 90 días del deductivo".'},{x:'30 días',why:'El dato de la materia es 90 días.'},{x:'1 año',why:'El dato de la materia es 90 días.'}]}
+],
+finals:[
+ {k:'Oral',q:'Explique el método deductivo y su variante súper deductiva.',a:'El deductivo (art. 5) parte del precio unitario de reventa de la mayor cantidad total de las mercaderías importadas (o idénticas/similares), en el mismo estado, a no vinculados del país de importación, y resta: comisiones o beneficios y gastos generales, transporte y seguro internos, y derechos e impuestos locales. Orden: mercadería propia, idénticas, similares. Si la mercadería se transformó, se usa el súper deductivo: se parte del precio del producto transformado y se deduce además el valor añadido, sobre datos objetivos y cuantificables. Maneja el plazo de 90 días y puede aplicarse de oficio o a pedido del importador.'},
+ {k:'Escrito',q:'DDP 160.000; flete interno 3.000; almacenamiento 1.000; gastos + utilidades 32.000; DI 20%. Calcule el VA.',a:'Base = 160.000 − 3.000 − 1.000 − 32.000 = 124.000. Coeficiente = 100/(100+20) = 0,83333. VA = 124.000 × 0,83333 = U$S 103.332,92.'}]
+});
+
+/* ===================== CASO 7 · TEMA 7 ===================== */
+LEVELS.push({id:'t07',tema:'07',title:'La máquina a medida',sub:'Art. 6 — Valor reconstruido',
+client:{id:'c07',n:'Lucía Ferraro',r:'Envasadora del Norte · máquina única',c:'#9a7414',i:'L'},
+intro:'Lucía importó una envasadora hecha a medida. No hay idénticas ni similares y no se revende. Pero el fabricante italiano colabora y abre su planilla de costos. Marta: <b>"Esta vez armamos el valor como lo haría el propio fabricante."</b>',
+objs:['La lógica del reconstruido: desde el costo hacia adelante','Los 3 componentes y qué incluye cada uno','La cadena hasta FOB y CIF','Por qué las prestaciones aparecen también acá','Por qué se usa poco y su relación con el art. 4'],
+steps:[
+{t:'brief',title:'Construir el valor desde el costo',html:'El deductivo va "hacia atrás" desde la reventa. El reconstruido va <b>"hacia adelante"</b>: arranca del costo de producir y suma capa por capa hasta el valor de exportación.',
+ bullets:['<b>1. Costo de materiales y fabricación</b>: materias primas, componentes, transporte de esos materiales, mano de obra directa, costos indirectos. Incluye las <b>prestaciones</b> del comprador (croquis, diseños, planos).','<b>2. Beneficios y gastos generales</b>: igual a lo que usualmente agregan los productores <b>del país de exportación</b> en ventas de la misma especie al país de importación.','<b>3. Demás gastos hasta FOB</b>; luego se suman flete y seguro internacional para el CIF (base argentina).'],
+ trap:'Las prestaciones aparecen en el art. 8 y en el art. 6. No es contradicción: en el reconstruido, lo que el comprador aportó ya es parte del costo de producir, va en el componente 1.'},
+{t:'classify',q:'Ubicá cada costo del fabricante en su componente.',buckets:[{id:'c1',label:'1 · Materiales y fabricación',cls:'b-con'},{id:'c2',label:'2 · Beneficios y gastos grales.',cls:'b-gold'},{id:'c3',label:'3 · Gastos hasta FOB',cls:'b-pur'},{id:'no',label:'✘ No va',cls:'b-err'}],items:[
+ {x:'Acero y componentes',b:'c1',why:'Materias primas y componentes: componente 1.'},
+ {x:'Transporte de esos materiales a la fábrica',b:'c1',why:'El transporte de los materiales es parte del costo de materiales.'},
+ {x:'Mano de obra directa',b:'c1',why:'Fabricación: componente 1.'},
+ {x:'Costos indirectos de fabricación',b:'c1',why:'Componente 1.'},
+ {x:'Planos que Lucía mandó gratis',b:'c1',why:'Prestación del comprador: integra el costo de producir (componente 1).'},
+ {x:'Beneficio usual de los fabricantes italianos del rubro',b:'c2',why:'Beneficios y gastos generales del país de exportación.'},
+ {x:'Gastos hasta poner la máquina a bordo en Génova',b:'c3',why:'Gastos hasta FOB puerto de embarque.'},
+ {x:'Ganancia del revendedor en Argentina',b:'no',why:'Eso es del deductivo (lo que se resta). El reconstruido mira el costo en origen.'},
+ {x:'Beneficio usual de los fabricantes argentinos',b:'no',why:'Deben ser los beneficios usuales del país de exportación, no del importador.'}]},
+{t:'order',q:'Recitá la cadena de valor del reconstruido.',items:[
+ {x:'Materiales + fabricación'},{x:'+ Beneficios y gastos generales'},{x:'+ Gastos hasta FOB = FOB'},{x:'+ Flete internacional + seguro = CIF'},{x:'CIF = Valor en aduana (base argentina)'}],hint:'Pensalo como la planilla de costos del fabricante, de arriba hacia abajo.'},
+{t:'calc',who:'marta',q:'Reconstruí el valor de la envasadora.',doc:doc('Planilla de costos del fabricante','Génova',[['Materiales (incluye planos aportados por Lucía)','USD 40.000'],['Fabricación (mano de obra + indirectos)','USD 20.000'],['Beneficios y gastos generales usuales en Italia','USD 12.000'],['Gastos hasta FOB Génova','USD 3.000'],['Flete internacional','USD 4.000'],['Seguro internacional','USD 500']]),
+ fields:[
+  {label:'Valor FOB reconstruido',unit:'USD',ans:75000,tol:0.5,hint:'Sumá los tres componentes, sin flete ni seguro.',how:'40.000 + 20.000 + 12.000 + 3.000 = 75.000'},
+  {label:'Valor en aduana (CIF)',unit:'USD',ans:79500,tol:0.5,hint:'Del FOB al CIF.',how:'75.000 + 4.000 + 500 = 79.500'}],note:'Números ilustrativos para practicar la cadena.'},
+{t:'choice',q:'¿Cuál es el principal obstáculo práctico del art. 6?',opts:[
+ {x:'Necesita los datos de costos reales del productor del país de exportación',ok:true,why:'Si el productor no colabora (o no se accede a sus datos), el método no puede aplicarse. Por eso se usa poco y suele saltarse al art. 7.'},
+ {x:'Que no admite prestaciones',why:'Sí las admite: van en el componente 1.'},
+ {x:'Que solo aplica a mercadería usada',why:'No tiene esa limitación.'}]},
+{t:'choice',who:'c07',q:'"¿Puedo pedir que usen el reconstruido antes que el deductivo?"',opts:[
+ {x:'Sí: por el art. 4 el importador puede pedir invertir el orden entre el 5º y el 6º',ok:true,why:'Es la única inversión de orden permitida en todo el sistema.'},
+ {x:'No, el orden es inamovible',why:'Hay una única excepción: la del art. 4.'},
+ {x:'Sí, y también puede pedirlo antes que las idénticas',why:'No: la inversión es solo entre deductivo y reconstruido.'}]},
+{t:'choice',q:'En una frase: ¿qué diferencia al deductivo del reconstruido?',opts:[
+ {x:'El deductivo parte del precio de reventa y resta; el reconstruido parte del costo de origen y suma',ok:true,why:'Son opuestos lógicos.'},
+ {x:'Son lo mismo con distinto nombre',why:'Son opuestos: uno resta desde la reventa, el otro suma desde el costo.'}]}
+],
+finals:[
+ {k:'Oral',q:'Explique el método del valor reconstruido y su relación con el deductivo.',a:'El reconstruido (art. 6) arma el valor desde el costo de producción: (1) costo de materiales y fabricación —incluidas las prestaciones del comprador—; (2) beneficios y gastos generales usuales entre productores del país de exportación para mercaderías de la misma especie; y (3) los demás gastos hasta el FOB, sumando luego flete y seguro para el CIF. Es el opuesto lógico del deductivo: uno parte del costo de origen y suma; el otro parte del precio de reventa y resta. Su orden con el deductivo puede invertirse a pedido del importador (art. 4). Se usa poco porque requiere los costos reales del productor extranjero.'}]
+});
+
+/* ===================== CASO 8 · TEMA 8 ===================== */
+LEVELS.push({id:'t08',tema:'08',title:'Leasing y líneas rojas',sub:'Art. 7 — Último recurso y métodos prohibidos',
+client:{id:'c08',n:'Gustavo Medina',r:'Constructora Medina · trae una grúa en leasing',c:'#5c6672',i:'G'},
+intro:'Gustavo trae una grúa en <b>leasing</b>: no la compra, la usa. No hay idénticas, no se revende y el fabricante no da costos. Y encima un inspector le sugirió "tomar el precio más alto de la lista". Marta: <b>"Flexibilidad sí. Barra libre, no."</b>',
+objs:['Qué es el último recurso y su nota distintiva (flexibilidad)','Los casos típicos de aplicación','Qué flexibilidades son razonables','La lista completa de métodos prohibidos'],
+steps:[
+{t:'brief',title:'La red de seguridad del sistema',html:'Cuando no puede aplicarse ningún método de los arts. 1 a 6, se determina el valor según <b>criterios razonables</b> compatibles con el Acuerdo y el art. VII del GATT, sobre la base de <b>datos disponibles en el país de importación</b>.',
+ key:'La nota distintiva del art. 7 es la <b>flexibilidad</b>: reaplica los métodos anteriores relajando razonablemente sus condiciones. No inventa un criterio nuevo.'},
+{t:'brief',title:'Casos típicos',html:'¿Cuándo aparece el art. 7?',bullets:['Importación de máquinas en <b>alquiler</b>.','Importación de máquinas en <b>leasing</b>.','Mercaderías que <b>no se revenden</b> en el país de importación.','Cuando <b>no hay importación de idénticas ni similares</b>.','Cuando se <b>desconoce el fabricante</b> o este se niega a dar datos de costos.','Despacho de mercaderías <b>usadas o reacondicionadas</b> a nuevo.']},
+{t:'choice',who:'c08',q:'"Mi grúa viene en leasing. ¿Qué método corresponde?"',opts:[
+ {x:'Típicamente el art. 7, último recurso',ok:true,why:'En el leasing no hay compraventa (no hay precio realmente pagado por la mercadería), y no hay comparables ni reventa: se va al art. 7.'},
+ {x:'El art. 1: el canon del leasing es el precio',why:'En el leasing se cede el uso, no se vende: no hay valor de transacción.'},
+ {x:'El art. 2 sin más',why:'No hay idénticas comparables. Se recurre al art. 7, aplicando con flexibilidad los métodos previos.'}]},
+{t:'brief',title:'Las líneas rojas',html:'La flexibilidad del art. 7 <b>no es barra libre</b>. El Acuerdo prohíbe basar el valor en:',
+ bullets:['El <b>precio de mercaderías producidas en el país de importación</b>.','Un sistema que tome el <b>valor más alto</b> entre dos posibles.','El <b>precio en el mercado interno del país de exportación</b>.','Un <b>costo de producción distinto</b> del valor reconstruido del art. 6.','El <b>precio de exportación a un tercer país</b>.','<b>Valores mínimos o arbitrarios</b>.','<b>Valores ficticios</b> (prohibición expresa del art. VII del GATT).'],
+ trap:'Pregunta casi segura: "¿Qué métodos están prohibidos en el art. 7?". Es la lista que más se pide recitar.'},
+{t:'classify',q:'El inspector propone opciones. ¿Cuáles son flexibilidad razonable y cuáles están prohibidas?',buckets:[{id:'ok',label:'✔ Flexibilidad razonable',cls:'b-ok'},{id:'no',label:'⛔ Prohibido',cls:'b-err'}],items:[
+ {x:'Usar grúas idénticas de otro origen',b:'ok',why:'Admitir idénticas/similares de otro origen es flexibilidad razonable.'},
+ {x:'Ampliar el plazo del elemento tiempo o de los 90 días',b:'ok',why:'Ampliar plazos razonablemente está permitido.'},
+ {x:'Aceptar márgenes de comparación más amplios',b:'ok',why:'Es flexibilidad razonable.'},
+ {x:'Precio de grúas fabricadas en Argentina',b:'no',why:'Prohibido: no refleja el valor de la mercadería importada.'},
+ {x:'Tomar el valor más alto de dos posibles',b:'no',why:'Prohibido: contrario a la regla de tomar el más bajo.'},
+ {x:'Precio de la grúa en el mercado interno del país exportador',b:'no',why:'Prohibido: no es el precio de exportación.'},
+ {x:'Un costeo distinto del reconstruido del art. 6',b:'no',why:'Prohibido: solo vale el reconstruido del art. 6.'},
+ {x:'Precio de exportación a Chile (tercer país)',b:'no',why:'Prohibido: no corresponde a la venta al país de importación.'},
+ {x:'Un valor mínimo fijado por la aduana',b:'no',why:'Prohibido: valores mínimos o arbitrarios.'},
+ {x:'Un valor ficticio',b:'no',why:'Prohibición expresa del art. VII del GATT.'}]},
+{t:'choice',q:'"Flexible" en el art. 7 significa...',opts:[
+ {x:'Reaplicar los métodos anteriores relajando razonablemente sus condiciones, con datos del país de importación',ok:true,why:'Exacto: se apoya en los métodos anteriores y los flexibiliza.'},
+ {x:'Que la aduana puede usar el criterio que quiera',why:'No: hay una lista de prohibidos y todo debe ser razonable y compatible con el Acuerdo.'},
+ {x:'Que se puede tomar el valor más alto para cubrirse',why:'Prohibido.'}]}
+],
+finals:[
+ {k:'Oral',q:'Explique el método del último recurso, sus casos de uso y los métodos prohibidos.',a:'El art. 7 se aplica cuando fracasan los métodos 1 a 6. Determina el valor con criterios razonables compatibles con el Acuerdo y el art. VII del GATT, usando datos del país de importación; su nota es la flexibilidad: reaplica los métodos anteriores relajando razonablemente sus condiciones (otro origen, plazos ampliados). Casos típicos: alquiler/leasing, mercadería no revendida, sin idénticas/similares, fabricante desconocido o que no colabora, usados. Prohibidos: precio de mercaderías del país de importación, valor más alto, precio del mercado interno del país de exportación, costeo distinto del reconstruido, precio a terceros países, valores mínimos, arbitrarios o ficticios.'}]
+});
+
+/* ===================== CASO 9 · TEMA 9 ===================== */
+LEVELS.push({id:'t09',tema:'09',title:'Casos raros en el mostrador',sub:'Reglas generales y casos particulares',
+client:{id:'c09',n:'Agustina Leiva',r:'Leiva Comercial · consignaciones y turbinas',c:'#1f7a4d',i:'A'},
+intro:'Agustina tiene un día complicado: mercadería en consignación, una turbina que vuelve reparada de Alemania, y un despacho trabado porque la aduana todavía no fijó el valor. Marta: <b>"Estos casos no encajan en la compraventa típica. Hay reglas para todo."</b>',
+objs:['Las 3 reglas generales que valen con cualquier método','Conversión monetaria','Retiro con garantía antes de la determinación definitiva','Consignación, leasing/alquiler y reimportación'],
+steps:[
+{t:'brief',title:'Las reglas que atraviesan todos los métodos',html:'Disposiciones de aplicación general. Suelen caer como preguntas cortas o como "detalle" dentro de un ejercicio.',
+ bullets:['<b>Conversión monetaria</b>: se usa el tipo de cambio que publiquen las autoridades del <b>país de importación</b>, vigente en el momento que fije la legislación nacional.','<b>Retiro antes de la determinación definitiva</b>: si la fijación del valor se demora, el importador puede retirar la mercadería constituyendo una <b>garantía suficiente</b> (depósito, fianza) que cubra los tributos. Evita inmovilizar la carga.','<b>Derecho de comprobación (art. 17)</b>: la aduana conserva el derecho de comprobar la veracidad y exactitud de lo declarado.'],
+ key:'Si en el oral te quedás sin qué decir sobre un método, sumar las tres reglas generales (conversión, retiro con garantía, comprobación) muestra que dominás el sistema completo. Artículos exactos: '+VER},
+{t:'choice',who:'c09',q:'"La aduana todavía no fijó el valor definitivo y necesito la mercadería ya. ¿Qué hago?"',opts:[
+ {x:'Retirarla constituyendo una garantía suficiente por los tributos posibles',ok:true,why:'Es la regla general de retiro antes de la determinación definitiva.'},
+ {x:'Esperar: no se puede retirar hasta la determinación final',why:'Sí se puede, con garantía suficiente.'},
+ {x:'Pagar el doble de los tributos',why:'No existe esa regla: se constituye una garantía suficiente.'}]},
+{t:'choice',who:'c09',q:'"La factura está en euros. ¿Qué tipo de cambio uso?"',opts:[
+ {x:'El que publiquen las autoridades del país de importación, vigente en el momento que fije la legislación nacional',ok:true,why:'Regla general de conversión monetaria.'},
+ {x:'El que figure en la factura del vendedor',why:'Se usa el tipo de cambio publicado por las autoridades del país de importación.'},
+ {x:'El del país de exportación',why:'Es el del país de importación.'}]},
+{t:'brief',title:'Situaciones que no encajan en la compraventa típica',html:'Tres casos particulares:',
+ bullets:['<b>Consignación</b>: no hay venta en firme al importar (se envía para vender por cuenta del consignante). Sin precio de venta cierto, el art. 1 no encaja → <b>métodos alternativos</b>.','<b>Alquiler / Leasing</b>: no hay compraventa, sino cesión de uso. Típicamente se valora por el <b>último recurso (art. 7)</b>.','<b>Reimportación tras exportación temporal</b> (elaboración, transformación o reparación): el foco está en el <b>valor agregado en el exterior</b>, no en el valor total. Mecánica exacta del ajuste: '+VER],
+ trap:'Confundir consignación con compraventa: en consignación no hay comprador que pagó un precio, hay un consignatario que venderá por cuenta ajena. No se aplica el art. 1 aunque el enunciado hable de "precio estimado".'},
+{t:'classify',q:'Asigná a cada caso de Agustina su tratamiento.',buckets:[{id:'alt',label:'↘ Métodos alternativos (no art. 1)',cls:'b-gold'},{id:'a7',label:'🛟 Típicamente art. 7',cls:'b-con'},{id:'va',label:'🔧 Valor agregado afuera',cls:'b-pur'}],items:[
+ {x:'Mercadería en consignación con "precio estimado"',b:'alt',why:'No hay venta en firme: no encaja el art. 1, se va a métodos alternativos.'},
+ {x:'Autoelevador en alquiler',b:'a7',why:'Cesión de uso, sin compraventa: típicamente art. 7.'},
+ {x:'Grúa en leasing',b:'a7',why:'Leasing: cesión de uso, típicamente art. 7.'},
+ {x:'Turbina que vuelve reparada de Alemania',b:'va',why:'Reimportación tras exportación temporal: interesa el valor de la reparación hecha afuera.'},
+ {x:'Insumo que salió a transformarse y volvió',b:'va',why:'Reimportación tras transformación: foco en el valor agregado en el exterior.'}]},
+{t:'choice',who:'c09',q:'"La turbina vale USD 400.000 y la reparación en Alemania costó USD 35.000. ¿Sobre qué se pone el foco?"',opts:[
+ {x:'En el valor de la reparación hecha en el exterior (mano de obra + repuestos)',ok:true,why:'No se valora la turbina completa como si fuera nueva: interesa lo agregado afuera.'},
+ {x:'En los USD 400.000 de la turbina completa',why:'Esa es la trampa: valuar la mercadería completa en vez del valor agregado afuera.'},
+ {x:'En nada: la reimportación no tributa',why:'Sí interesa el valor agregado en el exterior.'}]},
+{t:'choice',q:'En la consignación, ¿por qué no se aplica el art. 1?',opts:[
+ {x:'Porque no hay venta en firme al importar: no hay precio realmente pagado o por pagar',ok:true,why:'Sin compraventa, no hay valor de transacción.'},
+ {x:'Porque el consignante y el consignatario están vinculados',why:'No es por vinculación: es porque no hay venta en firme.'},
+ {x:'Sí se aplica, tomando el precio de lista',why:'No: no hay precio de venta cierto al momento de importar.'}]}
+],
+finals:[
+ {k:'Oral',q:'Enuncie las reglas generales de valoración y explique dos casos particulares.',a:'Reglas generales: (1) conversión monetaria según el tipo de cambio publicado por el país de importación; (2) retiro antes de la determinación definitiva mediante garantía suficiente; (3) derecho de comprobación de la aduana (art. 17). Casos particulares: en consignación no hay venta en firme, por lo que no se aplica el art. 1 y se recurre a métodos alternativos; en leasing/alquiler no hay compraventa y se valora usualmente por el art. 7; en la reimportación tras exportación temporal, el valor se centra en el mayor valor agregado en el exterior.'}]
+});
+
+/* ===================== CASO 10 · TEMA 10 ===================== */
+LEVELS.push({id:'t10',tema:'10',crit:true,title:'La Hoja de Valor',sub:'Hoja de Valor y liquidación de importación',
+client:{id:'c10',n:'Pablo Ríos',r:'Despachante junior de otra agencia',c:'#7a3c9a',i:'P'},
+intro:'Pablo, un despachante junior de otra agencia, le pide a Marta que le revise una Hoja de Valor antes de presentarla. Marta te la pasa: <b>"Si la encontrás vos, la aprendés para siempre. Es el ejercicio integrador que más cae en el escrito."</b>',
+objs:['Qué es la Hoja de Valor y qué datos lleva','El procedimiento en 4 pasos','La cadena FOB ± art. 8 + flete + seguro = CIF = VA','Los tributos y la base de cada uno','Detectar los errores típicos'],
+steps:[
+{t:'brief',title:'La declaración jurada del valor',html:'La <b>Hoja de Valor</b> (Declaración del Valor en Aduana) es el formulario donde contás, casillero por casillero, cómo llegaste desde la factura al valor en aduana. Número de formulario: '+VER,
+ bullets:['Importador/comprador y su <b>nivel</b>: revendedor, mayorista, minorista.','Vendedor: fabricante, productor, revendedor.','Factura, contrato de venta, condición de entrega.','Descuentos y ajustes aplicados.'],
+ trap:'El nivel comercial del comprador y del vendedor no es decorativo: incide en las comparaciones (arts. 2/3) y en la lógica del deductivo. Consignalo siempre.'},
+{t:'order',q:'Ordená el procedimiento de resolución.',items:[
+ {x:'Partir del precio realmente pagado o por pagar (normalmente el FOB de factura)'},
+ {x:'Aplicar los ajustes del art. 8 (sumar lo que corresponde, deducir lo que no integra)'},
+ {x:'Sumar flete y seguro internacional para llegar al CIF = valor en aduana'},
+ {x:'Liquidar cada tributo sobre su propia base'}]},
+{t:'brief',title:'Los tributos y sus bases',html:'Sobre el valor en aduana (CIF) se liquidan los tributos. Cada uno con su base (esquema general):',
+ bullets:['<b>Derecho de importación (DI)</b> ad valorem: sobre el <b>valor en aduana (CIF)</b>. Alícuota según posición arancelaria (AEC/DIEZ del ejercicio).','<b>Tasa de estadística</b>: sobre el valor en aduana (CIF).','<b>IVA</b>: sobre <b>CIF + DI + tasa de estadística</b>. Conformación exacta: '+VER,'<b>IVA adicional / percepción</b>: sobre la misma base que el IVA.','<b>Ganancias (percepción)</b>: 6% u 11% según la mercadería/condición. Base y alícuota: '+VER,'Alícuotas de referencia de los prácticos: <b>TE 3%, IVA 21%, IVA adicional 20%, Ganancias 6% u 11%</b>; el DI según el ejercicio. Usalas salvo que el enunciado diga otras. '+VER],
+ key:'FOB (± ajustes art. 8) + flete internacional + seguro internacional = CIF = Valor en Aduana. Cada ajuste se justifica con su artículo.'},
+{t:'classify',q:'¿Sobre qué base se calcula cada tributo?',buckets:[{id:'va',label:'📦 Sobre el VA (CIF)',cls:'b-con'},{id:'iva',label:'🧾 Sobre CIF + DI + TE',cls:'b-pur'}],items:[
+ {x:'Derecho de importación',b:'va',why:'El DI ad valorem va sobre el valor en aduana.'},
+ {x:'Tasa de estadística',b:'va',why:'La TE va sobre el valor en aduana.'},
+ {x:'IVA',b:'iva',why:'El IVA va sobre el VA más los tributos previos (DI + TE).'},
+ {x:'IVA adicional',b:'iva',why:'Misma base que el IVA.'}]},
+{t:'spot',who:'c10',q:'Revisá la Hoja de Valor de Pablo. Tocá cada renglón que está mal.',title:'Hoja de Valor · borrador de Pablo',rows:[
+ {x:'Precio FOB de factura',v:'57.000',why:'Correcto: se parte del precio realmente pagado.'},
+ {x:'Nivel comercial del comprador: (en blanco)',v:'—',bad:true,why:'El nivel comercial hay que consignarlo siempre: incide en las comparaciones y en el deductivo.'},
+ {x:'+ Comisión de venta al agente del vendedor',v:'1.000',why:'Correcto: la comisión de venta se suma.'},
+ {x:'+ Comisión al agente de compras del importador',v:'1.200',bad:true,why:'La comisión de compra NO se suma al valor en aduana.'},
+ {x:'− Descuento por pago anticipado',v:'−800',bad:true,why:'Es un descuento no admisible: se ajusta en positivo (se suma), no se resta.'},
+ {x:'Flete internacional: no se declara, "es por cuenta del comprador"',v:'0',bad:true,why:'El flete se incluye igual, con la tarifa normalmente aplicable.'},
+ {x:'+ Seguro internacional',v:'590',why:'Correcto: Argentina valora CIF.'},
+ {x:'DI calculado sobre el valor en aduana (CIF)',v:'✓',why:'Correcto: el DI va sobre el VA.'},
+ {x:'IVA 21% calculado sobre el CIF solo',v:'✗',bad:true,why:'El IVA no va sobre el CIF pelado: su base es CIF + DI + TE.'}],
+ done:'Donde más se pierde el ejercicio: no sumar descuentos no admisibles, sumar comisiones de compra, olvidar flete/seguro "por cuenta del comprador" y mezclar las bases.'},
+{t:'calc',who:'marta',q:'Ahora liquidá el mini-esquema del libro.',doc:doc('Liquidación ilustrativa','alícuotas de referencia',[['FOB','57.000'],['Flete internacional','900'],['Seguro internacional','590'],['DI (AEC del ejemplo)','15%'],['Tasa de estadística','3%'],['IVA','21%']]),
+ fields:[
+  {label:'CIF = Valor en aduana',unit:'USD',ans:58490,tol:0.5,hint:'FOB + flete + seguro.',how:'57.000 + 900 + 590 = 58.490'},
+  {label:'Derecho de importación (15% del VA)',unit:'USD',ans:8773.5,tol:0.6,dec:2,hint:'15% sobre el CIF.',how:'58.490 × 0,15 = 8.773,50'},
+  {label:'Tasa de estadística (3% del VA)',unit:'USD',ans:1754.7,tol:0.6,dec:2,hint:'3% sobre el CIF.',how:'58.490 × 0,03 = 1.754,70'},
+  {label:'Base del IVA (CIF + DI + TE)',unit:'USD',ans:69018.2,tol:0.6,dec:2,hint:'Sumá el VA y los dos tributos anteriores.',how:'58.490 + 8.773,50 + 1.754,70 = 69.018,20'},
+  {label:'IVA (21% de esa base)',unit:'USD',ans:14493.82,tol:0.6,dec:2,hint:'21% sobre la base del IVA, no sobre el CIF.',how:'69.018,20 × 0,21 = 14.493,82'}],
+ note:'Números ilustrativos: en el examen seguí el enunciado y las alícuotas de la cátedra. Bases y alícuotas: '+VER},
+{t:'choice',q:'Un enunciado trae un descuento por pago anticipado y una comisión pagada al agente del comprador. ¿Cómo impactan?',opts:[
+ {x:'El descuento se suma de nuevo (no admisible); la comisión de compra no se suma',ok:true,why:'Distinguir y justificar ambos con el art. 8 es exactamente lo que evalúa la cátedra.'},
+ {x:'Ambos bajan el valor en aduana',why:'El descuento por pago anticipado es no admisible: se suma. Y la comisión de compra simplemente no se suma.'},
+ {x:'Ambos se suman',why:'La comisión de compra no se suma.'}]}
+],
+finals:[
+ {k:'Escrito',q:'Describa el procedimiento para completar la Hoja de Valor y liquidar los tributos de una importación.',a:'Se parte del precio realmente pagado o por pagar (FOB de factura). Se aplican los ajustes del art. 8: se suman comisiones de venta, prestaciones, cánones condición de venta, reversiones y descuentos no admisibles; se deducen los conceptos ajenos al valor (gastos posteriores a la importación). Se suman flete y seguro internacional para obtener el CIF, que es el valor en aduana. Sobre esa base se liquidan DI, tasa de estadística, IVA, IVA adicional y percepción de ganancias, cada uno sobre su base. Cada ajuste se justifica con su artículo.'},
+ {k:'Oral',q:'Un enunciado incluye un descuento por pago anticipado y una comisión pagada al agente del comprador. ¿Cómo impacta cada uno?',a:'El descuento por pago anticipado es no admisible: se ajusta en positivo. La comisión al agente del comprador es de compra: no se suma. Ambos se justifican con el art. 8.'}]
+});
+
+/* ===================== CASO 11 · TEMA 11 ===================== */
+LEVELS.push({id:'t11',tema:'11',crit:true,title:'El expediente final',sub:'Ejercicio resuelto: vinculación + liquidación',
+client:{id:'c11',n:'Inspectora Carla Domínguez',r:'Aduana · Sección Valoración',c:'#22548c',i:'C'},
+intro:'Llegó tu primer expediente grande, tal como lo dio la cátedra. Mercadería XX del fabricante M, origen <b>Singapur</b>, CIP <b>U$S 50.000</b>, <b>5.000 unidades</b>, flete <b>U$S 5.000</b>, seguro <b>U$S 300</b>, multa por destinar a los 16 días. La aduana rechazó el valor. Marta: <b>"Si sacás este, estás lista para el escrito."</b>',
+objs:['Por qué se rechaza el VT (vinculación, art. 15.4)','La regla de la pizarra para elegir el VT alternativo','Armar FOB, CIF y VA','Liquidar DI, TE e IVA con su base','Entender el acta de diferencias'],
+steps:[
+{t:'choice',who:'c11',q:'"Rechazamos los U$S 50.000 declarados." ¿Por qué motivo?',opts:[
+ {x:'Por vinculación entre comprador y vendedor que influye en el precio (art. 15.4)',ok:true,why:'Correcto. No se puede usar el precio de la operación: hay que buscar un VT alternativo entre idénticas/similares.'},
+ {x:'Porque el precio es bajo',why:'Precio bajo solo no alcanza (Peckaitis). El rechazo es por vinculación que influye en el precio.'},
+ {x:'Porque la venta es CIP y Argentina valora CIF',why:'El Incoterm se ajusta; no es causa de rechazo. El motivo es la vinculación.'}]},
+{t:'brief',title:'La regla de la pizarra',html:'Hay seis operaciones comparables. Primero se filtra, después se elige:',
+ bullets:['① Preferir el <b>mismo fabricante</b>.','② <b>Mismo nivel comercial</b> (y mismo origen).','③ El <b>precio más bajo</b> entre los válidos.'],
+ trap:'Tentarse con el precio más bajo sin filtrar antes por origen y nivel comercial. El más bajo es el TERCER criterio, no el primero.'},
+{t:'classify',q:'Filtrá las seis operaciones (la tuya: fabricante M, Singapur).',buckets:[{id:'v',label:'✔ Pasa los filtros',cls:'b-ok'},{id:'x',label:'✘ Descartada',cls:'b-err'}],items:[
+ {x:'#1 · = NC · fabr. S · Singapur · VT 30',b:'v',why:'Mismo nivel comercial y mismo origen: válida.'},
+ {x:'#2 · ↓ NC · fabr. T · Taiwán · VT 31',b:'x',why:'Distinto nivel comercial y distinto origen (art. 8.1.b).'},
+ {x:'#3 · = NC · fabr. M · Singapur · VT 29',b:'v',why:'Mismo fabricante, mismo origen y nivel comercial: válida.'},
+ {x:'#4 · = NC · fabr. U · Singapur · VT 32',b:'v',why:'Mismo nivel y origen: válida.'},
+ {x:'#5 · ↓ NC · fabr. M · Singapur · VT 28',b:'x',why:'Distinto nivel comercial (art. 8.1.b), aunque sea del mismo fabricante.'},
+ {x:'#6 · = NC · fabr. V · India · VT 25',b:'x',why:'Distinto origen: se descarta aunque sea la más barata.'}]},
+{t:'choice',q:'Entre las válidas (#1 VT 30, #3 VT 29, #4 VT 32), ¿cuál elegís?',opts:[
+ {x:'#3 · VT 29: mismo fabricante M, mismo origen y nivel comercial',ok:true,why:'Entre las que cumplen todo, se prioriza el mismo fabricante. VT = U$S 29.'},
+ {x:'#6 · VT 25, la más barata',why:'Acá se desaprueba: la #6 es de India, distinto origen. Ya quedó afuera.'},
+ {x:'#5 · VT 28, mismo fabricante',why:'Es de distinto nivel comercial: descartada.'},
+ {x:'#4 · VT 32',why:'Pasa los filtros, pero no es del mismo fabricante y no es la más baja.'}]},
+{t:'calc',who:'marta',q:'Del VT elegido al valor en aduana, y la liquidación ajustada.',doc:doc('Expediente · valor ajustado','alícuotas del ejercicio',[['VT alternativo elegido','U$S 29 / u'],['Cantidad','5.000 u'],['Flete internacional','U$S 5.000'],['Seguro internacional','U$S 300'],['DI · TE · IVA','35% · 3% · 21%']]),
+ fields:[
+  {label:'Nuevo FOB (VT × cantidad)',unit:'U$S',ans:145000,tol:0.5,hint:'Multiplicá el VT elegido por las unidades.',how:'29 × 5.000 = 145.000'},
+  {label:'CIF = Valor en aduana',unit:'U$S',ans:150300,tol:0.5,hint:'FOB + flete + seguro.',how:'145.000 + 5.000 + 300 = 150.300'},
+  {label:'DI (35% del VA)',unit:'U$S',ans:52605,tol:0.5,hint:'El DI va sobre el VA, no sobre el FOB.',how:'150.300 × 0,35 = 52.605'},
+  {label:'TE (3% del VA)',unit:'U$S',ans:4509,tol:0.5,hint:'3% sobre el VA.',how:'150.300 × 0,03 = 4.509'},
+  {label:'Base del IVA ajustado (VA + DI + TE)',unit:'U$S',ans:207414,tol:0.5,hint:'No apliques el 21% directo sobre el VA: armá primero la base.',how:'150.300 + 52.605 + 4.509 = 207.414'},
+  {label:'IVA (21%) sobre esa base',unit:'U$S',ans:43556.94,tol:0.6,dec:2,hint:'21% de la base del IVA.',how:'207.414 × 0,21 = 43.556,94'}]},
+{t:'brief',title:'El acta de diferencias',html:'Se liquida sobre lo declarado (VA 50.000) y sobre lo ajustado (VA 150.300). La diferencia es lo que hay que pagar de más.<div class="tscroll"><table class="tbl"><tr><th>Concepto</th><th class="r">Declarado</th><th class="r">Ajustado</th><th class="r">Diferencia</th></tr><tr><td>Valor en aduana</td><td class="r">50.000</td><td class="r">150.300</td><td class="r">—</td></tr><tr><td>DI 35%</td><td class="r">17.500</td><td class="r">52.605</td><td class="r">35.105</td></tr><tr><td>TE 3%</td><td class="r">1.500</td><td class="r">4.509</td><td class="r">3.009</td></tr><tr><td>IVA 21%</td><td class="r">14.490</td><td class="r">43.556,94</td><td class="r">29.066,94</td></tr><tr><td>IVA adicional 20%</td><td class="r">13.800</td><td class="r">44.482,80</td><td class="r">27.682,80</td></tr><tr><td>Ganancias</td><td class="r">4.140</td><td class="r">12.444,84</td><td class="r">8.304,84</td></tr><tr><td>IIBB 2,5%</td><td class="r">1.725</td><td class="r">5.185,35</td><td class="r">3.460,35</td></tr></table></div>',
+ bullets:['En lo <b>declarado</b>, la base del IVA se armó con <b>VA + DI + TE + multa 1%</b>: 50.000 + 17.500 + 1.500 + 500 = <b>69.000</b>. Sobre esa base, IVA e IVA adicional.','El acta también muestra el SIM (10), el costo total (U$S 19.510) y el crédito fiscal (U$S 34.155) de la operación original.','<b>Total a pagar (diferencia) según el acta de la cátedra: U$S 53.665.</b> Es el cargo que formula la aduana tras rechazar el VT y revaluar. '+VER],
+ key:'Cada tributo tiene su base: DI y TE sobre el VA; IVA e IVA adicional sobre la base imponible (VA + DI + TE, más la multa si corresponde).'},
+{t:'choice',q:'¿Qué representa el "total a pagar" del acta?',opts:[
+ {x:'La suma de las diferencias de cada tributo entre lo declarado y lo ajustado',ok:true,why:'Es el cargo que formula la aduana después de revaluar.'},
+ {x:'El total de tributos de la operación ajustada',why:'No: es solo la diferencia entre lo ajustado y lo ya declarado.'},
+ {x:'La multa por destinar fuera de término',why:'La multa es un componente de la base declarada, no el total del acta.'}]},
+{t:'choice',q:'Último control: el DI del valor ajustado se calcula sobre...',opts:[
+ {x:'El valor en aduana: 150.300',ok:true,why:'DI y TE van sobre el VA.'},
+ {x:'La base del IVA',why:'La base del IVA incluye al DI: calcularlo sobre ella sería circular.'},
+ {x:'El FOB: 145.000',why:'Argentina valora CIF: el DI va sobre el valor en aduana (CIF).'}]}
+],
+finals:[
+ {k:'Escrito',q:'Resuelva: se rechaza el VT por vinculación. Explique cómo elige el valor alternativo y arma el valor en aduana.',a:'Rechazado el art. 1 por vinculación (art. 15.4), se busca el VT entre operaciones comparables aplicando, en orden: mismo fabricante, mismo nivel comercial y precio más bajo entre los válidos. Se descartan las de distinto origen (India) o distinto nivel comercial. Se elige la del fabricante M: VT = 29. Luego: 29 × 5.000 = 145.000 FOB; + flete 5.000 + seguro 300 = CIF 150.300 = Valor en Aduana. Sobre el VA se liquidan DI, TE, IVA, IVA adicional, IG e IIBB, y se compara con lo declarado para obtener las diferencias (total según el acta de la cátedra: U$S 53.665).'},
+ {k:'Trampa',q:'¿Por qué no se toma el VT 25 de India, si es el más bajo?',a:'Porque el precio más bajo es el tercer criterio: solo se aplica entre las operaciones que ya pasaron los filtros de fabricante, origen y nivel comercial. La #6 es de distinto origen.'}]
+});
+
+
+</script>
+<script>
+(function(){
+"use strict";
+function ask(t,m,yes,cb){var d=document.createElement('div');d.className='modal';d.innerHTML='<div class="mb"><h3>'+t+'</h3><p>'+m+'</p><div class="row"><button class="btn ghostb" data-a="0">Seguir jugando</button><button class="btn" data-a="1">'+yes+'</button></div></div>';document.body.appendChild(d);d.onclick=function(e){var a=e.target.getAttribute&&e.target.getAttribute('data-a');if(a===null&&e.target!==d)return;d.remove();if(a==='1')cb();};}
+function guard(cb){if(cur&&cur.idx>=0)ask('¿Salir del caso?','Si salís ahora, el caso se reinicia la próxima vez.','Salir',cb);else cb();}
+/* ================= state ================= */
+var KEY='agencia-valoracion-v1';
+var S={levels:{},xp:0,sound:true,seen:{}};
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&typeof s==='object'){S.levels=s.levels||{};S.xp=s.xp||0;S.sound=s.sound!==false;S.seen=s.seen||{};}}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+load();
+
+var RANKS=[[0,'Pasante'],[8,'Auxiliar de despachante'],[16,'Despachante junior'],[24,'Despachante'],[31,'Despachante senior']];
+function totalStars(){var t=0;LEVELS.forEach(function(l){var r=S.levels[l.id];if(r)t+=r.stars||0;});return t;}
+function rankOf(st){var r=RANKS[0];RANKS.forEach(function(x){if(st>=x[0])r=x;});return r;}
+function nextRank(st){for(var i=0;i<RANKS.length;i++)if(st<RANKS[i][0])return RANKS[i];return null;}
+function isDone(id){return !!(S.levels[id]&&S.levels[id].done);}
+function unlocked(i){return i===0||isDone(LEVELS[i-1].id);}
+function updTop(){var st=totalStars();document.getElementById('rankName').textContent=rankOf(st)[1];document.getElementById('xpVal').textContent=S.xp+' XP';document.getElementById('btnSnd').textContent=S.sound?'🔔':'🔕';}
+
+var app=document.getElementById('app');
+function h(html){if(window.clearGhosts)clearGhosts();app.innerHTML=html;window.scrollTo(0,0);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function plain(html){var d=document.createElement('div');d.innerHTML=html;return d.textContent||'';}
+
+/* ================= sound & voice ================= */
+var actx=null;
+function tone(freqs,dur){if(!S.sound)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();var t=actx.currentTime;freqs.forEach(function(f,i){var o=actx.createOscillator(),g=actx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t+i*dur);g.gain.exponentialRampToValueAtTime(.12,t+i*dur+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*dur+dur);o.connect(g);g.connect(actx.destination);o.start(t+i*dur);o.stop(t+i*dur+dur+.05);});}catch(e){}}
+function sOk(){tone([660,880],.11);} function sErr(){tone([300,220],.14);} function sWin(){tone([523,659,784,1046],.13);}
+var voice=null;
+function pickVoice(){try{var v=speechSynthesis.getVoices();voice=v.find(function(x){return /es[-_]AR/i.test(x.lang);})||v.find(function(x){return /es[-_](419|US|MX)/i.test(x.lang);})||v.find(function(x){return /^es/i.test(x.lang);})||null;}catch(e){}}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function speakText(txt,btn){if(!('speechSynthesis' in window))return;if(speechSynthesis.speaking){speechSynthesis.cancel();document.querySelectorAll('.speak.on').forEach(function(b){b.classList.remove('on');b.textContent='🔊 Escuchar';});if(btn&&btn.dataset.on){btn.dataset.on='';return;}}
+  txt=txt.replace(/\bart\./gi,'artículo').replace(/\barts\./gi,'artículos').replace(/U\$S/g,'dólares').replace(/\bDI\b/g,'derecho de importación').replace(/\bVA\b/g,'valor en aduana').replace(/\bVT\b/g,'valor de transacción').replace(/\bTE\b/g,'tasa de estadística').replace(/\bFOB\b/g,'fob').replace(/\bCIF\b/g,'cif').replace(/\bOMC\b/g,'o eme ce').replace(/\bGATT\b/g,'gat').replace(/\bDVB\b/g,'de ve be').replace(/\bOMA\b/g,'o eme a').replace(/[★⚑◆▸⚠]/g,'');
+  var u=new SpeechSynthesisUtterance(txt);u.lang='es-AR';if(voice)u.voice=voice;u.rate=1;
+  if(btn){btn.classList.add('on');btn.textContent='■ Parar';btn.dataset.on='1';u.onend=function(){btn.classList.remove('on');btn.textContent='🔊 Escuchar';btn.dataset.on='';};}
+  speechSynthesis.speak(u);}
+function stopSpeak(){try{speechSynthesis.cancel();}catch(e){}}
+
+/* ================= feedback sheet ================= */
+var sheet=document.getElementById('sheet'),shCb=null;
+function feedback(ok,title,msg,btnTxt,cb){
+  sheet.className='sheet show '+(ok?'ok':'err');
+  document.getElementById('shIc').textContent=ok?'✅':'💡';
+  document.getElementById('shT').textContent=title;
+  document.getElementById('shP').innerHTML=msg||'';
+  var b=document.getElementById('shBtn');b.textContent=btnTxt||(ok?'Seguir':'Entendido, pruebo de nuevo');
+  shCb=cb;(ok?sOk:sErr)();setTimeout(function(){b.focus();},50);
+}
+document.getElementById('shBtn').onclick=function(){sheet.className='sheet';var c=shCb;shCb=null;if(c)c();};
+function hideSheet(){sheet.className='sheet';shCb=null;}
+var OKT=['¡Bien ahí!','¡Exacto!','¡Eso es!','¡Impecable!','¡Correcto!','¡Así se hace!'];
+var ERT=['Casi, mirá esto','No es por ahí','Ojo con esto','Revisemos','Todavía no'];
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+
+/* ================= characters ================= */
+var WHO={
+  marta:{n:'Marta Ibarra',r:'Despachante senior · tu mentora',c:'#9a7414',i:'M'},
+  aduana:{n:'Verificador de Aduana',r:'Sección Valoración',c:'#22548c',i:'A'},
+  luca:{n:'Vos',r:'Luca, en la agencia',c:'#1f7a4d',i:'L'}
+};
+function whoHTML(w){var p=WHO[w]||w;if(!p||!p.n)p=WHO.marta;return '<div class="who"><div class="av" style="background:'+p.c+'">'+esc(p.i)+'</div><div><b>'+esc(p.n)+'</b><span>'+esc(p.r)+'</span></div></div>';}
+function addClient(c){if(c&&c.id&&!WHO[c.id])WHO[c.id]=c;}
+LEVELS.forEach(function(l){addClient(l.client);});
+
+/* ================= MAP ================= */
+function renderMap(){
+  stopSpeak();hideSheet();updTop();cur=null;
+  var st=totalStars(),rk=rankOf(st),nx=nextRank(st);
+  var done=LEVELS.filter(function(l){return isDone(l.id);}).length;
+  var pct=nx?Math.round((st-rk[0])/(nx[0]-rk[0])*100):100;
+  var curIdx=-1;for(var i=0;i<LEVELS.length;i++){if(!isDone(LEVELS[i].id)&&unlocked(i)){curIdx=i;break;}}
+  var nodes=LEVELS.map(function(l,i){
+    var r=S.levels[l.id]||{},lock=!unlocked(i),cls='node'+(r.done?' done':'')+(lock?' locked':'')+(i===curIdx?' current':'');
+    var stars=r.done?'<span class="stars">'+'★'.repeat(r.stars)+'<span class="off">'+'★'.repeat(3-r.stars)+'</span></span>':'';
+    return '<div class="'+cls+'"><button class="nbtn" data-lv="'+i+'" '+(lock?'disabled aria-disabled="true"':'')+' aria-label="Caso '+(i+1)+'">'+(lock?'🔒':(r.done?'✓':(i+1)))+(l.crit?'<span class="crit">★</span>':'')+'</button><div class="ninfo"><div class="nt">Caso '+(i+1)+' · Tema '+l.tema+'</div><h3>'+esc(l.title)+'</h3><div class="ns">'+esc(l.sub)+'</div>'+stars+'</div></div>';
+  }).join('');
+  var pool=relampagoPool().length;
+  h('<section class="hero"><svg class="ship" viewBox="0 0 200 120"><path d="M10 80h180l-20 30H30z" fill="#fff"/><rect x="40" y="50" width="30" height="30" fill="#fff"/><rect x="74" y="50" width="30" height="30" fill="#fff"/><rect x="108" y="50" width="30" height="30" fill="#fff"/><rect x="74" y="18" width="30" height="30" fill="#fff"/><rect x="142" y="35" width="12" height="45" fill="#fff"/></svg>'+
+    '<h1>De pasante a despachante</h1><p>Entraste a trabajar en una agencia aduanera. Cada caso que resolvés te enseña un tema de la materia. Si te equivocás, te explicamos y volvés a intentar: acá nadie desaprueba, se aprende jugando.</p>'+
+    '<div class="herostats"><div class="hs"><b>'+done+'/'+LEVELS.length+'</b><span>casos resueltos</span></div><div class="hs"><b>'+st+' ★</b><span>estrellas</span></div><div class="hs"><b>'+S.xp+'</b><span>XP</span></div></div>'+
+    '<div class="rankbar"><div class="trk"><div class="fill" style="width:'+pct+'%"></div></div><div class="lb"><span>'+rk[1]+'</span><span>'+(nx?('Próximo: '+nx[1]+' ('+nx[0]+' ★)'):'Rango máximo de la zona')+'</span></div></div></section>'+
+    '<div class="modes"><button class="mode" id="mLib"><span class="mi">📒</span><span><b>Tu libreta</b><span>Todo lo que fuiste aprendiendo, ordenado por caso. Para repasar rápido.</span></span></button>'+
+    '<button class="mode" id="mRel" '+(pool<5?'disabled':'')+'><span class="mi">⚡</span><span><b>Repaso relámpago</b><span>'+(pool<5?'Se habilita al resolver tu primer caso.':'10 preguntas mezcladas de los casos que ya resolviste.')+'</span></span></button></div>'+
+    '<section class="zone"><div class="zonehead"><span class="ztag">Zona 1</span><h2>Importación</h2><span class="zp">'+done+' de '+LEVELS.length+' casos</span></div><p class="zonesub">Acuerdo del art. VII del GATT, los seis métodos, los ajustes del art. 8 y la liquidación. Los casos con ★ son núcleo de la materia.</p><div class="path">'+nodes+'</div>'+
+    '<div class="zonelock"><div class="zl">🔒 <b>Zona 2 · Exportación</b>Valor imponible, ajustes, Incoterms, derechos y reintegros. Próximamente.</div><div class="zl">🔒 <b>Zona 3 · Tributación</b>Obligación tributaria, IVA, derechos, tasas y regímenes especiales. Próximamente.</div></div></section>');
+  app.querySelectorAll('.nbtn').forEach(function(b){b.onclick=function(){if(b.disabled)return;startLevel(+b.dataset.lv);};});
+  document.getElementById('mLib').onclick=renderLib;
+  var mr=document.getElementById('mRel');if(!mr.disabled)mr.onclick=startRelampago;
+}
+
+/* ================= LEVEL PLAY ================= */
+var cur=null; // {lv, idx, step, errors, steps}
+function startLevel(i){confT++;
+  var l=LEVELS[i];
+  cur={lv:l,li:i,idx:-1,errors:0,steps:l.steps,mode:'level'};
+  renderIntro();
+}
+function renderIntro(){
+  var l=cur.lv;
+  h(lvTop(0)+'<div class="card introcase">'+whoHTML(l.client.id)+'<span class="steptag tag-brief">Caso '+(cur.li+1)+' · Tema '+l.tema+'</span><h2>'+esc(l.title)+'</h2><div class="bubble">'+l.intro+'</div>'+
+    '<p style="margin:16px 0 0;font-weight:700;font-size:.9rem">Lo que vas a dominar al cerrar este caso:</p><ul class="objs">'+l.objs.map(function(o){return '<li>'+o+'</li>';}).join('')+'</ul>'+
+    '<div class="cont"><button class="btn big" id="go">Aceptar el caso →</button></div></div>');
+  bindTop();document.getElementById('go').onclick=next;
+}
+function lvTop(p){var n=cur.steps.length;return '<div class="lvtop"><button class="xbtn" id="xq" title="Salir al mapa">✕</button><div class="prog"><i style="width:'+Math.round(p*100)+'%"></i></div><span class="lvcount">'+(cur.idx<0?'Intro':(Math.min(cur.idx+1,n)+'/'+n))+'</span></div>';}
+function bindTop(){var x=document.getElementById('xq');if(x)x.onclick=function(){guard(renderMap);};}
+function next(){hideSheet();stopSpeak();cur.idx++;if(cur.idx>=cur.steps.length){finish();return;}renderStep();}
+function miss(){cur.errors++;}
+function renderStep(){
+  var s=cur.steps[cur.idx],p=cur.idx/cur.steps.length;
+  var R={brief:rBrief,choice:rChoice,classify:rClassify,order:rOrder,calc:rCalc,spot:rSpot}[s.t];
+  h(lvTop(p)+'<div class="card" id="card"></div>');bindTop();
+  R(s,document.getElementById('card'));
+}
+var TAGS={brief:['tag-brief','📘 Lo que tenés que saber'],choice:['tag-choice','🗣 Decisión'],classify:['tag-classify','🧩 Arrastrá y clasificá'],order:['tag-order','🔢 Ordená'],calc:['tag-calc','🧮 Calculadora del caso'],spot:['tag-spot','🔍 Encontrá el error']};
+function tag(t){return '<span class="steptag '+TAGS[t][0]+'">'+TAGS[t][1]+'</span>';}
+
+/* --- brief --- */
+function rBrief(s,el){
+  var id=cur.lv.id+':'+cur.idx;S.seen[id]=1;save();
+  var bl=s.bullets||[];
+  el.innerHTML=whoHTML(s.who||'marta')+'<button class="speak" id="spk">🔊 Escuchar</button>'+tag('brief')+'<h2>'+s.title+'</h2><div class="bubble">'+s.html+'</div>'+
+    (bl.length?'<ul class="reveal-list" id="rl"></ul>':'')+(s.key?'<div class="key hide" id="kk"><b>◆ Anotá en la libreta: </b>'+s.key+'</div>':'')+(s.trap?'<div class="trap hide" id="tt"><b>⚠ Acá se desaprueba: </b>'+s.trap+'</div>':'')+
+    '<div class="cont"><button class="btn big" id="nx">'+(bl.length?'Mostrame el primero →':'Entendido →')+'</button></div>';
+  var k=0,nx=el.querySelector('#nx');
+  function showEnd(){['kk','tt'].forEach(function(i){var e=el.querySelector('#'+i);if(e)e.classList.remove('hide');});nx.textContent='Entendido, sigamos →';}
+  if(!bl.length)showEnd();
+  nx.onclick=function(){
+    if(k<bl.length){var li=document.createElement('li');li.innerHTML='<span class="n">'+(k+1)+'</span><span>'+bl[k]+'</span>';el.querySelector('#rl').appendChild(li);k++;tone([520+k*40],.06);
+      if(k<bl.length)nx.textContent='Siguiente ('+(k)+'/'+bl.length+') →';else showEnd();li.scrollIntoView({behavior:'smooth',block:'nearest'});return;}
+    next();};
+  el.querySelector('#spk').onclick=function(){speakText(plain(s.title+'. '+s.html+' '+bl.join('. ')+' '+(s.key||'')+' '+(s.trap?'Ojo: '+s.trap:'')),this);};
+}
+
+/* --- choice --- */
+function rChoice(s,el){
+  var opts=s.keep?s.opts.slice():shuffle(s.opts);var failed=false;
+  el.innerHTML=(s.who?whoHTML(s.who):'')+tag('choice')+(s.ctx?'<div class="bubble" style="margin-bottom:12px">'+s.ctx+'</div>':'')+'<div class="q">'+s.q+'</div><div class="opts">'+
+    opts.map(function(o,i){return '<button class="opt" data-i="'+i+'">'+o.x+'</button>';}).join('')+'</div>';
+  el.querySelectorAll('.opt').forEach(function(b){b.onclick=function(){
+    var o=opts[+b.dataset.i];
+    if(o.ok){b.classList.add('good');el.querySelectorAll('.opt').forEach(function(x){x.disabled=true;});feedback(true,rnd(OKT),o.why||s.why||'',null,next);}
+    else{b.classList.add('bad');b.disabled=true;if(!failed){miss();failed=true;}feedback(false,rnd(ERT),o.why||'Pensalo de nuevo.',null,null);}
+  };});
+}
+
+/* --- drag helper --- */
+window.clearGhosts=clearGhosts;function clearGhosts(){document.querySelectorAll('.ghost').forEach(function(g){g.remove();});document.querySelectorAll('[data-drop].hot').forEach(function(d){d.classList.remove('hot');});}
+document.addEventListener('pointerup',function(){setTimeout(clearGhosts,0);},true);document.addEventListener('pointercancel',clearGhosts,true);window.addEventListener('blur',clearGhosts);document.addEventListener('visibilitychange',clearGhosts);
+function makeDraggable(chip,onDrop,onTap){
+  var sx,sy,drag=null,moved=false,pid=null;
+  chip.addEventListener('pointerdown',function(e){if(chip.classList.contains('placed'))return;sx=e.clientX;sy=e.clientY;moved=false;pid=e.pointerId;try{chip.setPointerCapture(pid);}catch(x){}});
+  chip.addEventListener('pointermove',function(e){if(pid===null||e.pointerId!==pid)return;var dx=e.clientX-sx,dy=e.clientY-sy;
+    if(!moved&&Math.abs(dx)+Math.abs(dy)>8){moved=true;clearGhosts();drag=chip.cloneNode(true);drag.classList.add('ghost');drag.style.width=chip.offsetWidth+'px';document.body.appendChild(drag);}
+    if(moved&&drag){if(e.clientY>innerHeight-70)window.scrollBy(0,14);else if(e.clientY<90)window.scrollBy(0,-14);drag.style.left=(e.clientX-chip.offsetWidth/2)+'px';drag.style.top=(e.clientY-20)+'px';
+      document.querySelectorAll('[data-drop]').forEach(function(d){d.classList.remove('hot');});var t=document.elementFromPoint(e.clientX,e.clientY);var d=t&&t.closest('[data-drop]');if(d)d.classList.add('hot');}});
+  function end(e){if(pid===null)return;pid=null;document.querySelectorAll('[data-drop]').forEach(function(d){d.classList.remove('hot');});
+    if(moved&&drag){drag.remove();drag=null;var t=document.elementFromPoint(e.clientX,e.clientY);var d=t&&t.closest('[data-drop]');if(d)onDrop(d.dataset.drop);}
+    else onTap();}
+  chip.addEventListener('pointerup',end);chip.addEventListener('lostpointercapture',function(e){if(pid!==null&&moved)end(e);else if(drag){drag.remove();drag=null;}});chip.addEventListener('pointercancel',function(){pid=null;if(drag){drag.remove();drag=null;}});
+}
+
+/* --- classify --- */
+function rClassify(s,el){
+  var items=shuffle(s.items),left=items.length,sel=null,errs={};
+  var cols=s.buckets.length;
+  el.innerHTML=tag('classify')+'<div class="q">'+s.q+'</div><p class="hintline">Arrastrá cada tarjeta a su casillero, o tocá la tarjeta y después el casillero.</p><div class="pool" id="pool">'+
+    items.map(function(it,i){return '<button class="chip" data-i="'+i+'">'+it.x+'</button>';}).join('')+'</div>'+
+    '<div class="buckets" style="grid-template-columns:repeat(auto-fit,minmax('+(cols>3?150:200)+'px,1fr))">'+s.buckets.map(function(b){return '<div class="bucket '+(b.cls||'b-con')+'" data-drop="'+b.id+'"><h4>'+b.label+'</h4><div class="in"></div></div>';}).join('')+'</div>';
+  function place(i,bid){
+    var it=items[i],chip=el.querySelector('.chip[data-i="'+i+'"]');if(!chip||chip.classList.contains('placed'))return;
+    el.querySelectorAll('.chip.sel').forEach(function(c){c.classList.remove('sel');});sel=null;
+    if(it.b===bid){chip.classList.add('placed');el.querySelector('[data-drop="'+bid+'"] .in').appendChild(chip);left--;sOk();
+      if(it.why&&s.explainOk!==false){} if(left===0){feedback(true,'¡Todo en su lugar!',s.done||'',null,next);} }
+    else{chip.classList.remove('shake');void chip.offsetWidth;chip.classList.add('shake');if(!errs[i]){errs[i]=1;miss();}
+      var bl=s.buckets.filter(function(b){return b.id===bid;})[0];
+      feedback(false,'No va en "'+plain(bl.label)+'"',it.why||'Releé la consigna y probá otro casillero.',null,null);}
+  }
+  el.querySelectorAll('.chip').forEach(function(c){var i=+c.dataset.i;makeDraggable(c,function(bid){place(i,bid);},function(){if(c.classList.contains('placed'))return;el.querySelectorAll('.chip.sel').forEach(function(x){if(x!==c)x.classList.remove('sel');});c.classList.toggle('sel');sel=c.classList.contains('sel')?i:null;});});
+  el.querySelectorAll('.bucket').forEach(function(b){b.addEventListener('click',function(e){if(e.target.closest('.chip'))return;if(sel!==null)place(sel,b.dataset.drop);});});
+}
+
+/* --- order --- */
+function rOrder(s,el){
+  var order=s.items.map(function(x,i){return{x:x.x||x,why:x.why,i:i};});var items=shuffle(order),pos=0,errd={};
+  el.innerHTML=tag('order')+'<div class="q">'+s.q+'</div><p class="hintline">Tocá (o arrastrá) las tarjetas en el orden correcto.</p><div class="slots" id="slots" data-drop="slots">'+order.map(function(o,i){return '<div class="slot'+(i===0?' next':'')+'"><span class="sn">'+(i+1)+'</span><span class="st"></span></div>';}).join('')+'</div><div class="pool">'+
+    items.map(function(it){return '<button class="chip" data-i="'+it.i+'">'+it.x+'</button>';}).join('')+'</div>';
+  function put(i){
+    var chip=el.querySelector('.chip[data-i="'+i+'"]');if(!chip||chip.classList.contains('placed'))return;
+    if(i===pos){var sl=el.querySelectorAll('.slot')[pos];sl.classList.remove('next');sl.classList.add('filled');sl.querySelector('.st').innerHTML=order[i].x;chip.classList.add('placed');chip.style.display='none';pos++;sOk();
+      var nx=el.querySelectorAll('.slot')[pos];if(nx)nx.classList.add('next');
+      if(pos===order.length)feedback(true,'¡Orden perfecto!',s.done||'',null,next);}
+    else{chip.classList.remove('shake');void chip.offsetWidth;chip.classList.add('shake');if(!errd[pos]){errd[pos]=1;miss();}
+      feedback(false,'Ese no va en el lugar '+(pos+1),(order[i].why?order[i].why+' ':'')+(s.hint?s.hint:''),null,null);}
+  }
+  el.querySelectorAll('.chip').forEach(function(c){var i=+c.dataset.i;makeDraggable(c,function(){put(i);},function(){put(i);});});
+}
+
+/* --- calc --- */
+function parseNum(v){v=String(v).replace(/[^\d.,\-]/g,'');if(!v)return NaN;
+  if(v.indexOf(',')>=0){v=v.replace(/\./g,'').replace(',','.');}
+  else if(/^\-?\d{1,3}(\.\d{3})+$/.test(v)){v=v.replace(/\./g,'');}
+  return parseFloat(v);}
+function fmt(n,d){return Number(n).toLocaleString('es-AR',{minimumFractionDigits:d||0,maximumFractionDigits:d===undefined?2:d});}
+function rCalc(s,el){
+  var fi=0;
+  el.innerHTML=(s.who?whoHTML(s.who):'')+tag('calc')+'<div class="q">'+s.q+'</div>'+(s.doc||'')+s.fields.map(function(f,i){return '<div class="field'+(i>0?' locked':'')+'" data-f="'+i+'"><label>'+(i+1)+'. '+f.label+'</label><div class="frow">'+(f.unit?'<span class="u">'+f.unit+'</span>':'')+'<input inputmode="decimal" autocomplete="off" placeholder="Escribí el número"><button class="btn">Comprobar</button></div><div class="fmsg"></div></div>';}).join('')+(s.note?'<p class="hintline" style="margin-top:8px">'+s.note+'</p>':'');
+  el.querySelectorAll('.field').forEach(function(fd){
+    var i=+fd.dataset.f,f=s.fields[i],inp=fd.querySelector('input'),btn=fd.querySelector('.btn'),msg=fd.querySelector('.fmsg'),tries=0;
+    function check(){var v=parseNum(inp.value);if(isNaN(v)){msg.className='fmsg e';msg.textContent='Escribí un número (podés usar punto de miles y coma decimal).';return;}
+      var tol=f.tol!==undefined?f.tol:Math.max(1,Math.abs(f.ans)*0.002);
+      if(Math.abs(v-f.ans)<=tol){fd.classList.add('done');inp.disabled=true;btn.remove();msg.className='fmsg o';msg.innerHTML='✓ '+(f.how||'');sOk();
+        var nx=el.querySelector('.field[data-f="'+(i+1)+'"]');if(nx){nx.classList.remove('locked');setTimeout(function(){nx.querySelector('input').focus();},100);}
+        else feedback(true,'¡Cuenta cerrada!',s.done||'',null,next);}
+      else{tries++;if(tries===1)miss();sErr();msg.className='fmsg e';msg.innerHTML='✗ '+(f.hint||'Revisá la cuenta.')+(tries>=2?' <button class="howbtn">Ver cómo se llega</button>':'');
+        var hb=msg.querySelector('.howbtn');if(hb)hb.onclick=function(){inp.value=fmt(f.ans,f.dec);msg.className='fmsg o';msg.innerHTML='Se llega así: '+(f.how||fmt(f.ans,f.dec))+'. Escribilo y tocá Comprobar para seguir.';};}}
+    btn.onclick=check;inp.addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+  });
+}
+
+/* --- spot --- */
+function rSpot(s,el){
+  var need=s.rows.filter(function(r){return r.bad;}).length,found=0,penal={};
+  el.innerHTML=(s.who?whoHTML(s.who):'')+tag('spot')+'<div class="q">'+s.q+'</div><div class="sdoc"><div class="dh"><span>'+s.title+'</span><span class="foundc" id="fc">0 de '+need+'</span></div>'+
+    s.rows.map(function(r,i){return '<button class="srow" data-i="'+i+'"><span>'+r.x+'</span><span>'+(r.v||'')+'</span></button>';}).join('')+'</div><p class="hintline">Tocá cada renglón que está mal. Hay '+need+' error'+(need>1?'es':'')+'.</p>';
+  el.querySelectorAll('.srow').forEach(function(b){b.onclick=function(){var i=+b.dataset.i,r=s.rows[i];if(b.classList.contains('found')||b.classList.contains('fine'))return;
+    if(r.bad){b.classList.add('found');found++;el.querySelector('#fc').textContent=found+' de '+need;
+      if(found===need)feedback(true,'¡Encontraste todos los errores!',r.why+(s.done?'<br><br>'+s.done:''),null,next);else feedback(true,'¡Error encontrado!',r.why,'Seguir buscando',null);}
+    else{b.classList.add('fine');if(!penal[i]){penal[i]=1;miss();}feedback(false,'Ese renglón está bien',r.why||'Este dato es correcto.','Seguir buscando',null);}
+  };});
+}
+
+/* ================= finish ================= */
+function starsFor(e){return e<=2?3:(e<=5?2:1);}
+function finish(){
+  stopSpeak();
+  if(cur.mode==='rel'){finishRel();return;}
+  var l=cur.lv,st=starsFor(cur.errors),prev=S.levels[l.id]||{},firstDone=!prev.done;
+  var gain=cur.steps.length*10+st*20;if(!firstDone)gain=Math.round(gain/4);
+  S.levels[l.id]={done:true,stars:Math.max(st,prev.stars||0),errors:cur.errors};S.xp+=gain;save();updTop();sWin();confetti();
+  var nextL=LEVELS[cur.li+1];
+  var zoneDone=LEVELS.every(function(x){return isDone(x.id);});
+  h('<div class="card endc"><div class="medal">'+(st===3?'🏆':(st===2?'🥈':'🎖'))+'</div><h2>Caso resuelto: '+esc(l.title)+'</h2><div class="bigstars">'+'★'.repeat(st)+'<span class="off">'+'★'.repeat(3-st)+'</span></div>'+
+    '<div class="kv"><div><b>+'+gain+'</b><span>XP</span></div><div><b>'+cur.errors+'</b><span>tropiezos</span></div><div><b>'+rankOf(totalStars())[1]+'</b><span>tu rango</span></div></div>'+
+    (st<3?'<p style="color:var(--muted);font-size:.9rem;margin:0">Podés volver a jugarlo cuando quieras para sacar las 3 estrellas.</p>':'')+
+    '<div class="learned">'+l.objs.map(function(o){return '<span>✓ '+plain(o)+'</span>';}).join('')+'</div>'+
+    '<div class="canans"><h3>🎓 Lo que ya podés responder en el final</h3><div class="sub">Probá contestarla en voz alta y después abrila para comparar con la respuesta modelo.</div>'+
+    l.finals.map(function(f){return '<details class="fq"><summary><span class="badge '+(f.k==='Escrito'?'esc':'')+'">'+f.k+'</span><span>'+f.q+'</span></summary><div class="ans">'+f.a+'</div></details>';}).join('')+'</div>'+
+    (zoneDone?'<div class="key" style="text-align:left;margin-top:18px"><b>🏅 ¡Zona Importación completa!</b> Resolviste los 11 casos. Usá el Repaso relámpago para mantenerlo fresco.</div>':'')+
+    '<div class="endbtns"><button class="btn ghostb" id="eMap">Volver al mapa</button>'+(nextL?'<button class="btn okb" id="eNext">Siguiente caso →</button>':'')+'</div></div>');
+  document.getElementById('eMap').onclick=renderMap;
+  var en=document.getElementById('eNext');if(en)en.onclick=function(){startLevel(cur.li+1);};
+}
+
+/* ================= relámpago ================= */
+function relampagoPool(){var p=[];LEVELS.forEach(function(l){if(!isDone(l.id))return;l.steps.forEach(function(s){if(s.t==='choice')p.push(s);});});return p;}
+function startRelampago(){var pool=shuffle(relampagoPool()).slice(0,10);cur={lv:{id:'rel',title:'Repaso relámpago'},li:-1,idx:-1,errors:0,steps:pool,mode:'rel'};next();}
+function finishRel(){var n=cur.steps.length,ok=n-cur.errors;var gain=ok*5;S.xp+=gain;save();updTop();if(ok>=n-1){sWin();confetti();}
+  h('<div class="card endc"><div class="medal">⚡</div><h2>Repaso relámpago</h2><div class="kv"><div><b>'+ok+'/'+n+'</b><span>de primera</span></div><div><b>+'+gain+'</b><span>XP</span></div></div><p>'+(ok===n?'Perfecto. Esto ya lo tenés.':(ok>=n*0.7?'Muy bien. Lo que te costó, repasalo en tu libreta.':'Vale la pena volver a jugar los casos donde dudaste.'))+'</p><div class="endbtns"><button class="btn ghostb" id="eMap">Volver al mapa</button><button class="btn okb" id="eAg">Otra ronda ⚡</button></div></div>');
+  document.getElementById('eMap').onclick=renderMap;document.getElementById('eAg').onclick=startRelampago;}
+
+/* ================= libreta ================= */
+function renderLib(){
+  stopSpeak();hideSheet();cur=null;
+  var html='<div class="lib"><h2>📒 Tu libreta de despachante</h2><p style="color:var(--muted);margin:0">Cada cosa que Marta te explicó queda anotada acá. Se va llenando a medida que jugás.</p>';
+  var any=false;
+  LEVELS.forEach(function(l){var notes=[];l.steps.forEach(function(s,i){if(s.t!=='brief')return;if(!S.seen[l.id+':'+i]&&!isDone(l.id))return;
+      notes.push('<div class="libnote"><b>'+s.title+'.</b> '+(s.key||plain(s.html))+'</div>'+(s.trap?'<div class="libnote trap"><b>⚠ Acá se desaprueba:</b> '+s.trap+'</div>':''));});
+    if(notes.length){any=true;html+='<div class="libcase"><h3>Caso '+(LEVELS.indexOf(l)+1)+' · '+esc(l.title)+' <span style="font-family:Inter;font-size:.78rem;color:var(--muted);font-weight:600">Tema '+l.tema+'</span></h3>'+notes.join('')+'</div>';}});
+  if(!any)html+='<div class="libcase"><p class="empty">Todavía está vacía. Resolvé el primer caso y empezá a llenarla.</p></div>';
+  html+='<div class="endbtns"><button class="btn ghostb" id="lb">← Volver al mapa</button></div></div>';
+  h(html);document.getElementById('lb').onclick=renderMap;
+}
+
+/* ================= confetti ================= */
+var confT=0;function confetti(){var my=++confT;var c=document.getElementById('confetti'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;var cols=['#22548c','#1f7a4d','#d6a51c','#8a1c1c','#7a3c9a'];
+  var P=[];for(var i=0;i<120;i++)P.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*.4,vx:(Math.random()-.5)*3,vy:2+Math.random()*3,r:Math.random()*6,c:cols[i%5],a:Math.random()*6});
+  var t=0;(function f(){x.clearRect(0,0,c.width,c.height);P.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.a+=.1;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-4,-2,8+p.r,5);x.restore();});if(my!==confT){x.clearRect(0,0,c.width,c.height);return;}if(++t<160)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height);})();}
+
+/* ================= wiring ================= */
+document.getElementById('goHome').onclick=function(){guard(renderMap);};
+document.getElementById('btnLib').onclick=function(){guard(renderLib);};
+document.getElementById('btnSnd').onclick=function(){S.sound=!S.sound;save();updTop();};
+renderMap();
+window.__agencia={S:S,LEVELS:LEVELS,startLevel:startLevel,next:next};
+})();
+</script>
+</body>
+</html>
